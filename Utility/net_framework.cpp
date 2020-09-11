@@ -1,50 +1,52 @@
 /**
-* @file msg_dispatcher.cpp
+* @file net_framework.cpp
 *
 * @author Hourui (liquidmonkey)
 */
 
-#include "msg_controler.hpp"
-#include "msg_dispatcher.hpp"
+#include "Utility/net_framework.hpp"
+#ifdef _WIN32
+#pragma comment(lib,"ws2_32.lib") 
+#endif
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace msg
+namespace net
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void dispatcher::task_info::run(void)
+framework::framework(void)
 {
-	m_controler->dispatch_node(m_obj);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-dispatcher::dispatcher(void)
-{}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-dispatcher::~dispatcher(void)
+framework::~framework(void)
 {
-	stop();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-dispatcher::stop(void)
-{
-	m_workers.safe_stop();
+framework::net_init(void){
+#ifdef _WIN32
+	WORD sockVersion = MAKEWORD(2, 2);
+	WSADATA data;
+	if (WSAStartup(sockVersion, &data) != 0)
+	{
+		Clog::error_throw(errors::system, "net work init error!");
+	}
+	if (HIBYTE(data.wVersion) != 2 || LOBYTE(data.wVersion) != 2)
+	{
+		WSACleanup();
+		Clog::error_throw(errors::system, "net work init error (Version != 2.2)!");
+	}
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-dispatcher::start(std::uint32_t nworker)
-{
-	assert(nworker > 0);
-	m_workers.init(nworker);
+void 
+framework::net_free(void){
+#ifdef _WIN32
+	WSACleanup();
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-dispatcher::dispatch(task_info&& _task)
-{
-	m_workers.schedule(std::move(_task));
-}
+}//namespace net
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-}//namespace msg
-////////////////////////////////////////////////////////////////////////////////////////////////////
-}//namespace Utility 
+}//namespace Utility

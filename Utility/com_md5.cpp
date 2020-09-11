@@ -4,10 +4,10 @@
 * @author Hourui (liquidmonkey)
 **/
 
-#include "com_md5.hpp"
-#include "com_hex_caster.hpp"
+#include "Utility/com_md5.hpp"
+#include "Utility/com_hex_caster.hpp"
+#include "Utility/logger.hpp"
 #include <string.h>
-#include "logger.hpp"
 
 namespace Utility
 {

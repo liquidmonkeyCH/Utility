@@ -26,8 +26,8 @@
 * @author Hourui (liquidmonkey)
 */
 
+#include "Utility/logger.hpp"
 #include <iostream>
-#include "logger.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32

@@ -4,9 +4,9 @@
 * @author Hourui (liquidmonkey)
 */
 #ifdef _WIN32
-#include "net_io_service_iocp.hpp"
-#include "net_session.hpp"
-#include "net_responder.hpp"
+#include "Utility/net_io_service_iocp.hpp"
+#include "Utility/net_session.hpp"
+#include "Utility/net_responder.hpp"
 #pragma comment(lib, "Mswsock.lib") 
 
 //#define IOCP_LOG

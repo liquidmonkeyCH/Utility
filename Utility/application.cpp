@@ -4,8 +4,8 @@
 * @author Hourui (liquidmonkey)
 **/
 
-#include "application.hpp"
-#include "logger.hpp"
+#include "Utility/application.hpp"
+#include "Utility/logger.hpp"
 
 #include <iostream>
 #include <signal.h>
