@@ -1,31 +1,19 @@
 /**
-* @file mem_stream_node.hpp
+* @file msg_controler.cpp
 *
 * @author Hourui (liquidmonkey)
 */
-#ifndef __MEM_STREAM_NODE_HPP__
-#define __MEM_STREAM_NODE_HPP__
 
-#include "base_defines.hpp"
+#include "Utility/msg_controler.hpp"
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace mem
+namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<std::size_t N>
-struct stream_node
-{
-	static constexpr std::size_t MAX_LEN = N;
-	stream_node(void) :m_next(nullptr) { m_buffer[N] = 0; }
-	~stream_node(void) = default;
 
-	char m_buffer[N + 1];
-	stream_node* m_next;
-};
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace mem
+}//namespace msg
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace Utility 
-#endif //__MEM_BUFFER_HPP__

@@ -19,7 +19,7 @@ namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class object_iface;
-enum class err : int
+enum err : int
 {
 	pack = -3,
 	unpack = -2,
@@ -28,7 +28,7 @@ enum class err : int
 	logic,
 	null_handle,
 };
-using handler_t = err(*)(object_iface*, mem::message*);
+using handler_t = int(*)(object_iface*, mem::message*);
 struct MS_HEADER
 {
 	std::uint32_t m_uiLen;

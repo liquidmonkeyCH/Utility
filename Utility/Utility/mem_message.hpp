@@ -32,6 +32,25 @@ public:
 	// Returns the total number of bytes read since this object was created.
 	net_size_t get_read_bytes(void) const { return m_position; }
 	net_size_t get_read_limit(void) const { return m_limit; }
+
+	template<class T>
+	bool get(T& data)
+	{
+		constexpr net_size_t size = sizeof(T);
+		const char* p;
+		net_size_t len = size;
+		net_size_t pos = 0;
+		do
+		{
+			p = this->next(len);
+			if (!p) return false;
+			memcpy((char*)(&data) + pos, p, len);
+			pos += len;
+			if (pos >= size) break;
+			len = size - pos;
+		} while (true);
+		return true;
+	}
 protected:
 	void set_read_limit(net_size_t limit) { m_limit = limit; }
 protected:

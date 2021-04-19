@@ -8,13 +8,23 @@
 
 #include "mem_buffer.hpp"
 #include "mem_data_factory.hpp"
-#include "mem_stream_node.hpp"
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace mem
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template<std::size_t N>
+struct stream_node
+{
+	static constexpr std::size_t MAX_LEN = N;
+	stream_node(void) :m_next(nullptr) { m_buffer[N] = 0; }
+	~stream_node(void) = default;
+
+	char m_buffer[N + 1];
+	stream_node* m_next;
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<std::size_t block_size>
 class stream_buffer : public mem::buffer_iface

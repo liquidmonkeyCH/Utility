@@ -8,6 +8,7 @@
 #define __COM_UNIQUE_CODE_HPP__
 
 #include <time.h>
+#include <cstdint>
 
 namespace Utility
 {

@@ -83,7 +83,7 @@ private:
 		}
 
 		handler_t handle = this->get_handle(msg);
-		err ret = err::null_handle;
+		int ret = err::null_handle;
 		if (!handle || (ret = handle(obj, message)) != err::none)
 		{
 			obj->handle_error(ret);

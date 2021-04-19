@@ -17,12 +17,13 @@ session_wrap<st, pares_message_wrap>::~session_wrap(void)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<socket_type st, class pares_message_wrap>
-void session_wrap<st, pares_message_wrap>::init_buffer(std::size_t recv_buffer_size, std::size_t send_buffer_size)
+void session_wrap<st, pares_message_wrap>::init(std::size_t recv_buffer_size, std::size_t send_buffer_size, msg::controler_iface* controler)
 {
 	if (m_init_complete) return;
 	m_recv_buffer.init(recv_buffer_size);
 	m_send_buffer.init(send_buffer_size);
 
+	m_controler = controler;
 	m_recv_data.m_buffer.len = MAX_MSG_LEN;
 	m_recv_data.m_buffer.buf = m_recv_buffer.write(m_recv_data.m_buffer.len);
 	m_init_complete = true;
@@ -70,7 +71,7 @@ template<socket_type st, class pares_message_wrap>
 void session_wrap<st, pares_message_wrap>::process_close(void)
 {
 	if(m_recv_buffer.go_bad())
-		m_parent->post_request(this, &m_recv_buffer);
+		m_controler->post_request(this, &m_recv_buffer);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<socket_type st, class pares_message_wrap>
@@ -80,7 +81,7 @@ bool session_wrap<st, pares_message_wrap>::process_recv(net_size_t size)
 		return false;
 
 	if (m_recv_buffer.commit_recv(size))
-		m_parent->post_request(this, &m_recv_buffer);
+		m_controler->post_request(this, &m_recv_buffer);
 
 	m_recv_data.m_buffer.len = MAX_MSG_LEN;
 	m_recv_data.m_buffer.buf = m_recv_buffer.write(m_recv_data.m_buffer.len);
@@ -108,8 +109,8 @@ template<socket_type st, class pares_message_wrap>
 bool session_wrap<st, pares_message_wrap>::send(const void* data, net_size_t len)
 {
 	UTILITY_NET_SESSION_SEND_BEGIN(len);
-	UTILITY_NET_SESSION_SEND(data,len,b_send);
-	UTILITY_NET_SESSION_SEND_END(b_send);
+	UTILITY_NET_SESSION_SEND(data,len);
+	UTILITY_NET_SESSION_SEND_END();
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

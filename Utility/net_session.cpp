@@ -7,6 +7,7 @@
 #include "Utility/net_session.hpp"
 #include "Utility/net_io_service.hpp"
 #include "Utility/net_framework.hpp"
+#include "Utility/msg_defines.hpp"
 
 //#define SESSION_LOG
 #ifdef SESSION_LOG
@@ -23,9 +24,9 @@ namespace net
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 session_iface::session_iface(void)
 : m_io_service(nullptr)
-, m_parent(nullptr)
 , m_state(state::none)
 , m_socket(nullptr)
+, m_parent(nullptr)
 , m_recv_data()
 , m_send_data()
 , m_close_reason(reason::cs_none)
@@ -60,7 +61,7 @@ session_iface::close(reason st)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void 
-session_iface::handle_error(msg::err ret)
+session_iface::handle_error(int ret)
 {
 	switch (ret)
 	{

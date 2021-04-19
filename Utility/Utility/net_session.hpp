@@ -11,6 +11,7 @@
 #include "net_framework.hpp"
 #include "net_io_service.hpp"
 #include "msg_object.hpp"
+#include "msg_controler.hpp"
 
 namespace Utility
 {
@@ -47,8 +48,8 @@ public:
 	void close(reason);
 	bool is_connected(void);
 protected:
-	void set_connected(framework* parent,fd_t fd, sockaddr_storage* addr);
-	virtual void handle_error(msg::err);
+	void set_connected(framework* parent, fd_t fd, sockaddr_storage* addr);
+	virtual void handle_error(int);
 	//! for wrap
 	virtual void clear(void) = 0;
 	virtual void on_connect(void) = 0;
@@ -57,10 +58,10 @@ protected:
 	virtual void process_close(void) = 0;
 protected:
 	io_service_iface* m_io_service;
-	framework* m_parent;
 	std::atomic<state> m_state;
 
 	socket_iface* m_socket;
+	framework* m_parent;
 
 	per_io_data m_recv_data;
 	per_io_data m_send_data;
@@ -81,7 +82,7 @@ public:
 	session_wrap(void);
 	virtual ~session_wrap(void);
 protected:
-	void init_buffer(std::size_t recv_buffer_size, std::size_t send_buffer_size);
+	void init(std::size_t recv_buffer_size, std::size_t send_buffer_size, msg::controler_iface* controler);
 
 	void clear(void);
 	void do_close(void);
@@ -103,32 +104,35 @@ protected:
 	std::mutex m_send_mutex;
 	bool m_init_complete;
 };
-#define UTILITY_NET_SESSION_SEND_BEGIN(size)					\
+#define UTILITY_NET_SESSION_SEND_BEGIN(_len)					\
 	if (this->m_state != net::session_iface::state::connected)	\
 			return false;										\
 	std::lock_guard<std::mutex> lock(this->m_send_mutex);		\
-	if (this->m_send_buffer.writable_size() < size){			\
+	if (this->m_send_buffer.writable_size() < _len){			\
 		this->close(net::session_iface::reason::cs_send_buffer_overflow);			\
 		return false;											\
+	}															\
+	bool _flag = false;											\
+	char* _p = nullptr;											\
+	const char* _packet;										\
+	net_size_t _left,_size;										\
+
+#define UTILITY_NET_SESSION_SEND(_data,_len)			\
+	_packet = (const char*)_data;						\
+	_left = _len;										\
+	_size = _len;										\
+	while (_left != 0) {								\
+		_size = _left;									\
+		_p = this->m_send_buffer.write(_size);			\
+		memcpy(_p, _packet, _size);						\
+		if(this->m_send_buffer.commit_write(_size))		\
+			_flag = true;								\
+		_packet += _size;								\
+		_left -= _size;									\
 	}
 
-#define UTILITY_NET_SESSION_SEND(data,len,flag)			\
-	bool flag = false;{									\
-	char* p = nullptr;									\
-	const char* packet = (const char*)data;				\
-	net_size_t left = len;								\
-	net_size_t size = len;								\
-	while (left != 0) {									\
-		size = left;									\
-		p = this->m_send_buffer.write(size);			\
-		memcpy(p, packet, size);						\
-		flag |= this->m_send_buffer.commit_write(size);	\
-		packet += size;									\
-		left -= size;									\
-	}}
-
-#define UTILITY_NET_SESSION_SEND_END(flag)				\
-	if (flag) this->post_send();
+#define UTILITY_NET_SESSION_SEND_END()					\
+	if (_flag) this->post_send();
 
 #include "net_session.inl"
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -22,203 +22,218 @@
     <Filter Include="Utility\net">
       <UniqueIdentifier>{c76167ef-a614-4f03-9271-dcab331ec1ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\pipe">
+      <UniqueIdentifier>{c30ff2a6-ca84-404a-840b-9bad15429835}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\db_hiredis.hpp">
-      <Filter>Utility\db</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\db_mysqlpp.hpp">
-      <Filter>Utility\db</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\base_defines.hpp">
+    <ClInclude Include="Utility\base_defines.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_guard.hpp">
-      <Filter>Utility\com</Filter>
+    <ClInclude Include="Utility\logger.hpp">
+      <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_hex_caster.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_less.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_md5.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_numeric_digit.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_protobuf.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_random.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_service.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_service_manager.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_singleton.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_thread_pool.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_typename.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_unique_code.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\application.hpp">
+    <ClInclude Include="Utility\application.hpp">
       <Filter>Utility\main</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_socket.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_defines.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_framework.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_io_service.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_io_service_epoll.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_io_service_iocp.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_requester.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_responder.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\net_session.hpp">
-      <Filter>Utility\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\logger.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\mem_buffer.hpp">
-      <Filter>Utility\mem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\mem_data_factory.hpp">
-      <Filter>Utility\mem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\mem_message.hpp">
-      <Filter>Utility\mem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\mem_rotative_buffer.hpp">
-      <Filter>Utility\mem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\mem_stream_buffer.hpp">
-      <Filter>Utility\mem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_channel.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_controler.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_defines.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_dispatcher.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_handler_manager_deque.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_handler_manager_map.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_message.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_pares_len.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_pares_zero.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\com_scheduler.hpp">
+    <ClInclude Include="Utility\com_binaryloader.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UtilityServer\Utility\Utility\msg_object.hpp">
+    <ClInclude Include="Utility\com_guard.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_hex_caster.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_less.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_md5.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_numeric_digit.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_protobuf.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_random.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_scheduler.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_service.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_service_manager.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_singleton.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_thread_pool.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_typename.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_unique_code.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\db_hiredis.hpp">
+      <Filter>Utility\db</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\db_mysqlpp.hpp">
+      <Filter>Utility\db</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_buffer.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_data_factory.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_message.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_rotative_buffer.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_stream.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\mem_stream_buffer.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_channel.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_controler.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_defines.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_dispatcher.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_handler_manager_deque.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_handler_manager_map.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_message.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_object.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_pares_len.hpp">
+      <Filter>Utility\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\msg_pares_zero.hpp">
       <Filter>Utility\msg</Filter>
     </ClInclude>
     <ClInclude Include="Utility\msg_session.hpp">
       <Filter>Utility\msg</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\mem_stream.hpp">
-      <Filter>Utility\mem</Filter>
+    <ClInclude Include="Utility\net_defines.hpp">
+      <Filter>Utility\net</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\com_binaryloader.hpp">
-      <Filter>Utility\com</Filter>
+    <ClInclude Include="Utility\net_framework.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_io_service.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_io_service_epoll.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_io_service_iocp.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_requester.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_responder.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_session.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\net_socket.hpp">
+      <Filter>Utility\net</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\pipe_dispatcher.hpp">
+      <Filter>Utility\pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\pipe_object.hpp">
+      <Filter>Utility\pipe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\UtilityServer\Utility\Utility\net_requester.inl">
-      <Filter>Utility\net</Filter>
-    </None>
-    <None Include="..\..\UtilityServer\Utility\Utility\net_responder.inl">
-      <Filter>Utility\net</Filter>
-    </None>
-    <None Include="..\..\UtilityServer\Utility\Utility\net_session.inl">
-      <Filter>Utility\net</Filter>
-    </None>
-    <None Include="..\..\UtilityServer\Utility\Utility\mem_data_factory.inl">
+    <None Include="Utility\mem_data_factory.inl">
       <Filter>Utility\mem</Filter>
     </None>
-    <None Include="..\..\UtilityServer\Utility\Utility\mem_rotative_buffer.inl">
+    <None Include="Utility\mem_rotative_buffer.inl">
       <Filter>Utility\mem</Filter>
     </None>
-    <None Include="..\..\UtilityServer\Utility\Utility\mem_stream_buffer.inl">
+    <None Include="Utility\mem_stream_buffer.inl">
       <Filter>Utility\mem</Filter>
+    </None>
+    <None Include="Utility\net_requester.inl">
+      <Filter>Utility\net</Filter>
+    </None>
+    <None Include="Utility\net_responder.inl">
+      <Filter>Utility\net</Filter>
+    </None>
+    <None Include="Utility\net_session.inl">
+      <Filter>Utility\net</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\UtilityServer\Utility\com_md5.cpp">
-      <Filter>Utility\com</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\application.cpp">
-      <Filter>Utility\main</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\logger.cpp">
+    <ClCompile Include="logger.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\msg_channel.cpp">
+    <ClCompile Include="application.cpp">
+      <Filter>Utility\main</Filter>
+    </ClCompile>
+    <ClCompile Include="com_md5.cpp">
+      <Filter>Utility\com</Filter>
+    </ClCompile>
+    <ClCompile Include="msg_channel.cpp">
       <Filter>Utility\msg</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\msg_controler.cpp">
+    <ClCompile Include="msg_controler.cpp">
       <Filter>Utility\msg</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\msg_dispatcher.cpp">
+    <ClCompile Include="msg_dispatcher.cpp">
       <Filter>Utility\msg</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_framework.cpp">
+    <ClCompile Include="net_framework.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_io_service.cpp">
+    <ClCompile Include="net_io_service.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_io_service_epoll.cpp">
+    <ClCompile Include="net_io_service_epoll.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_io_service_iocp.cpp">
+    <ClCompile Include="net_io_service_iocp.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_session.cpp">
+    <ClCompile Include="net_session.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UtilityServer\Utility\net_socket.cpp">
+    <ClCompile Include="net_socket.cpp">
       <Filter>Utility\net</Filter>
+    </ClCompile>
+    <ClCompile Include="pipe_dispatcher.cpp">
+      <Filter>Utility\pipe</Filter>
+    </ClCompile>
+    <ClCompile Include="pipe_object.cpp">
+      <Filter>Utility\pipe</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

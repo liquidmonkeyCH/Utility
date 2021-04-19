@@ -109,14 +109,15 @@ public:
 			Clog::error("message too large!");
 			return false;
 		}
-		MS_HEADER kHeader;
+		msg::MS_HEADER kHeader;
 		kHeader.m_uiLen = (net_size_t)data_size + msg::MS_HEADER_LEN;
 		kHeader.m_uiId = id;
 		UTILITY_NET_SESSION_SEND_BEGIN(kHeader.m_uiLen);
-		UTILITY_NET_SESSION_SEND(&kHeader, MS_HEADER_LEN, b_send);
+		UTILITY_NET_SESSION_SEND(&kHeader, msg::MS_HEADER_LEN);
 		_impl::protobuf_ostream kStream(&this->m_send_buffer);
 		data.SerializeToZeroCopyStream(&kStream);
-		UTILITY_NET_SESSION_SEND_END(kStream.need_send() || b_send);
+		if(kStream.need_send()) _flag = true;
+		UTILITY_NET_SESSION_SEND_END();
 		return true;
 	}
 };

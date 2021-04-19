@@ -50,20 +50,7 @@ template<class key_t>
 handler_t handler_manager_map<key_t>::get_handle(mem::message* msg)
 {
 	key_t key;
-	net_size_t size = sizeof(key_t);
-	const char* p;
-	net_size_t len = size;
-	net_size_t pos = 0;
-	do
-	{
-		p = msg->next(len);
-		if (!p) return nullptr;
-		memcpy((char*)(&key) + pos, p, len);
-		pos += len;
-		if (pos >= size) break;
-		len = size - pos;
-	} while (true);
-
+	if (!msg->get(key)) return nullptr;
 	typename map_t::iterator it = m_map.find(key);
 	if (it != m_map.end())
 		return it->second;

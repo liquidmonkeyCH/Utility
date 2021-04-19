@@ -102,17 +102,11 @@ void responder<session_t, handler_manager>::process_accept(per_io_data* data, so
 	}
 	else
 	{
-		session->set_connected(this,data->m_fd, addr);
-		session->init_buffer(m_recv_buffer_size, m_send_buffer_size);
+		session->set_connected(this, data->m_fd, addr);
+		session->init(m_recv_buffer_size, m_send_buffer_size, &m_controler);
 		session->m_socket->set_blocking(false);
 	}
 	*se = session;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class session_t, class handler_manager>
-void responder<session_t, handler_manager>::post_request(session_iface* session, mem::message* message)
-{
-	m_controler.post_request(session, message);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class session_t, class handler_manager>

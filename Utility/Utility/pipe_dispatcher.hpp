@@ -1,32 +1,29 @@
 /**
-* @file msg_dispatcher.hpp
+* @file pipe_dispatcher.hpp
 *
 * @author Hourui (liquidmonkey)
 */
-#ifndef __MSG_DISPATCHER_HPP__
-#define __MSG_DISPATCHER_HPP__
+#ifndef __PIPE_DISPATCHER_HPP__
+#define __PIPE_DISPATCHER_HPP__
 
 #include "com_thread_pool.hpp"
-#include "msg_channel.hpp"
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace msg
+namespace pipe
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class controler_iface;
-////////////////////////////////////////////////////////////////////////////////////////////////////
+class object;
 class dispatcher
 {
 public:
 	struct task_info
 	{
-		channel_node* m_obj;
-		controler_iface* m_controler;
+		object* m_obj;
 		void exec(void);
 	};
-	friend class controler_iface;
+	friend class object;
 public:
 	dispatcher(void);
 	~dispatcher(void);
@@ -34,7 +31,7 @@ public:
 	dispatcher(const dispatcher&) = delete;
 	dispatcher& operator=(const dispatcher&) = delete;
 
-	void start(std::uint32_t nworker=1);
+	void start(std::uint32_t nworker = 1);
 	void stop(void);
 private:
 	void dispatch(task_info&& _task);
@@ -42,7 +39,7 @@ private:
 	com::task_threadpool<task_info> m_workers;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-}//namespace msg
+}//namespace pipe
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace Utility 
-#endif //__MSG_DISPATCHER_HPP__
+#endif //__PIPE_DISPATCHER_HPP__
