@@ -8,7 +8,7 @@
 #include "Utility/net_session.hpp"
 #include "Utility/net_responder.hpp"
 #pragma comment(lib, "Mswsock.lib") 
-
+#pragma comment(lib,"ws2_32.lib") 
 //#define IOCP_LOG
 #ifdef IOCP_LOG
 #define IOCP_DEBUG(fmt,...) NET_DEBUG(fmt,##__VA_ARGS__)

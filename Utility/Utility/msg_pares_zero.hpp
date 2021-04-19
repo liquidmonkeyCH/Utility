@@ -17,7 +17,7 @@ namespace msg
 namespace pares_zero
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class buffer_type, net_size_t max_message_len>
+template<class buffer_type, net_size_t max_message_len = buffer_type::pre_block_size>
 class comfirmer : public _message_impl<buffer_type, max_message_len>
 {
 public:

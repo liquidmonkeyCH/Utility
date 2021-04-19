@@ -98,17 +98,25 @@ private:
 template<net::socket_type st, class pares_message_wrap>
 class protobuf_session : public net::session_wrap<st, pares_message_wrap>
 {
-protected:
+public:
 	template<class T>
-	bool send_packet(const T& data)
+	bool send_packet(std::uint32_t id,const T& data)
 	{
-		static_assert(std::is_base_of<google::protobuf::Message, T>::value,"data mast be google::protobuf::Message");
-		UTILITY_NET_SESSION_SEND_BEGIN(data.ByteSizeLong() + sizeof(std::uint32_t)*2);
-
+		static_assert(std::is_base_of<google::protobuf::Message, T>::value, "data mast be google::protobuf::Message");
+		size_t data_size = data.ByteSizeLong();
+		if (data_size > std::numeric_limits<net_size_t>::max() - msg::MS_HEADER_LEN)
+		{
+			Clog::error("message too large!");
+			return false;
+		}
+		MS_HEADER kHeader;
+		kHeader.m_uiLen = (net_size_t)data_size + msg::MS_HEADER_LEN;
+		kHeader.m_uiId = id;
+		UTILITY_NET_SESSION_SEND_BEGIN(kHeader.m_uiLen);
+		UTILITY_NET_SESSION_SEND(&kHeader, MS_HEADER_LEN, b_send);
 		_impl::protobuf_ostream kStream(&this->m_send_buffer);
 		data.SerializeToZeroCopyStream(&kStream);
-
-		UTILITY_NET_SESSION_SEND_END(kStream.need_send());
+		UTILITY_NET_SESSION_SEND_END(kStream.need_send() || b_send);
 		return true;
 	}
 };

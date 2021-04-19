@@ -8,6 +8,7 @@
 
 #include "msg_object.hpp"
 #include "msg_controler.hpp"
+#include "mem_message.hpp"
 
 namespace Utility
 {
@@ -32,42 +33,42 @@ protected:
 	void close(int st);
 	void do_close(void) { on_close(m_close_reason);  m_message.clear(); }
 	virtual void on_close(int) = 0;
-
-	void post_send(void) { m_controler->post_request(this, &m_message); }
 protected:
 	enum class state { none, running, closing };
 	std::mutex m_mutex;
 	message_t m_message;
 	std::atomic<state> m_state;
-	controler_iface* m_controler;
 	int m_close_reason;
 	bool m_init_complete;
 };
-#define UTILITY_MSG_SESSION_ADD_MESSAGE_BEGIN(size)				\
-	if (this->m_state != state::running)						\
-			return false;										\
-	std::lock_guard<std::mutex> lock(this->m_mutex);			\
-	if (this->m_message.writable_size() < size){				\
-		return false;											\
-	}
+#define UTILITY_MSG_SESSION_ADD_MESSAGE_BEGIN(_len)			\
+if (this->m_state != state::running)						\
+		return false;										\
+std::lock_guard<std::mutex> lock(this->m_mutex);			\
+if (this->m_message.writable_size() < _len){				\
+	return false;											\
+}
+bool _flag = false;											\
+	char* _p = nullptr;										\
+	const char* _packet;									\
+	net_size_t _left, _size;
 
-#define UTILITY_MSG_SESSION_ADD_MESSAGE(data,len,flag)	\
-	char* p = nullptr;									\
-	const char* packet = (const char*)data;				\
-	net_size_t left = len;								\
-	net_size_t size = len;								\
-	bool flag = false;									\
-	do {												\
-		size = left;									\
-		p = this->m_message.write(size);				\
-		memcpy(p, packet, size);						\
-		flag |= this->m_message.commit_write(size);		\
-		packet += size;									\
-		left -= size;									\
-	} while (left != 0);
+#define UTILITY_MSG_SESSION_ADD_MESSAGE(_data,_len)	\
+_packet = (const char*)_data;						\
+_left = _len;										\
+_size = _len;										\
+while (_left != 0) {								\
+	_size = _left;									\
+	_p = this->m_message.write(_size);				\
+	memcpy(_p, _packet, _size);						\
+	if(this->m_message.commit_write(_size))			\
+		_flag = true;								\
+	_packet += _size;								\
+	_left -= _size;									\
+}
 
-#define UTILITY_MSG_SESSION_ADD_MESSAGE_END(flag)		\
-	if (flag) this->post_send();
+#define UTILITY_MSG_SESSION_ADD_MESSAGE_END()		\
+if (flag) m_controler->post_request(this, &m_message);
 
 template<class pares_message_wrap>
 session<pares_message_wrap>::session(void)
@@ -109,8 +110,8 @@ template<class pares_message_wrap>
 bool session<pares_message_wrap>::add_message_ex(const char* msg, std::size_t len)
 {
 	UTILITY_MSG_SESSION_ADD_MESSAGE_BEGIN(len);
-	UTILITY_MSG_SESSION_ADD_MESSAGE(msg, len, b_send);
-	UTILITY_MSG_SESSION_ADD_MESSAGE_END(b_send);
+	UTILITY_MSG_SESSION_ADD_MESSAGE(msg, len);
+	UTILITY_MSG_SESSION_ADD_MESSAGE_END();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace msg
