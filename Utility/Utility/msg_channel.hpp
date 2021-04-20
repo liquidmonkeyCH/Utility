@@ -8,6 +8,7 @@
 
 #include "logger.hpp"
 #include <thread>
+#include "task_object.hpp"
 
 namespace Utility
 {
@@ -17,7 +18,7 @@ namespace msg
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class channel;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class channel_node
+class channel_node : public task::object_iface
 {
 public:
 	friend class channel;
@@ -30,6 +31,7 @@ public:
 protected:
 	void clear(void);
 	void leave_channel(void);
+	virtual void exec(void);
 protected:
 	const bool m_is_channel;
 	channel_node* m_prev;

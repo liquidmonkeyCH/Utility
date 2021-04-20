@@ -6,7 +6,7 @@
 #ifndef __MSG_CONTROLER_HPP__
 #define __MSG_CONTROLER_HPP__
 
-#include "msg_dispatcher.hpp"
+#include "task_controler.hpp"
 #include "msg_message.hpp"
 #include "msg_object.hpp"
 #include "com_guard.hpp"
@@ -18,25 +18,20 @@ namespace Utility
 namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class controler_iface
+class controler_iface : public task::controler
 {
 public:
-	friend class dispatcher;
-	controler_iface(void);
-	~controler_iface(void);
+	controler_iface(void) = default;
+	~controler_iface(void) = default;
 
 	controler_iface(const controler_iface&) = delete;
 	controler_iface& operator=(const controler_iface&) = delete;
-
-	void init(dispatcher* _dispatcher);
-	virtual void post_request(object_iface* obj, mem::message* message) = 0;
+	friend class channel_node;
 protected:
 	void post_node(channel_node* node);
 	void dispatch_node(channel_node* node);
 	bool dispatch_channel(channel* p_channel);
 	virtual bool dispatch_obj(object_iface* obj) = 0;
-protected:
-	dispatcher* m_dispatcher;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class message_wrap,class handler_manager>
@@ -51,9 +46,11 @@ public:
 	controler_wrap(const controler_wrap&) = delete;
 	controler_wrap& operator=(const controler_wrap&) = delete;
 public:
-	void post_request(object_iface* obj, mem::message* message)
+	void post_request(task::object_iface* object)
 	{
-		switch (dynamic_cast<message_t*>(message)->comfirm())
+		object_iface* obj = dynamic_cast<object_iface*>(object);
+		message_t* message = dynamic_cast<message_t*>(obj->get_message());
+		switch (message->comfirm())
 		{
 		case state::ok:
 		case state::bad:

@@ -22,7 +22,7 @@
     <Filter Include="Utility\net">
       <UniqueIdentifier>{c76167ef-a614-4f03-9271-dcab331ec1ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility\pipe">
+    <Filter Include="Utility\task">
       <UniqueIdentifier>{c30ff2a6-ca84-404a-840b-9bad15429835}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -114,9 +114,6 @@
     <ClInclude Include="Utility\msg_defines.hpp">
       <Filter>Utility\msg</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\msg_dispatcher.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\msg_handler_manager_deque.hpp">
       <Filter>Utility\msg</Filter>
     </ClInclude>
@@ -165,11 +162,14 @@
     <ClInclude Include="Utility\net_socket.hpp">
       <Filter>Utility\net</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\pipe_dispatcher.hpp">
-      <Filter>Utility\pipe</Filter>
+    <ClInclude Include="Utility\task_controler.hpp">
+      <Filter>Utility\task</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\pipe_object.hpp">
-      <Filter>Utility\pipe</Filter>
+    <ClInclude Include="Utility\task_dispatcher.hpp">
+      <Filter>Utility\task</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\task_object.hpp">
+      <Filter>Utility\task</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -208,9 +208,6 @@
     <ClCompile Include="msg_controler.cpp">
       <Filter>Utility\msg</Filter>
     </ClCompile>
-    <ClCompile Include="msg_dispatcher.cpp">
-      <Filter>Utility\msg</Filter>
-    </ClCompile>
     <ClCompile Include="net_framework.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
@@ -229,11 +226,11 @@
     <ClCompile Include="net_socket.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
-    <ClCompile Include="pipe_dispatcher.cpp">
-      <Filter>Utility\pipe</Filter>
+    <ClCompile Include="task_dispatcher.cpp">
+      <Filter>Utility\task</Filter>
     </ClCompile>
-    <ClCompile Include="pipe_object.cpp">
-      <Filter>Utility\pipe</Filter>
+    <ClCompile Include="task_object.cpp">
+      <Filter>Utility\task</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

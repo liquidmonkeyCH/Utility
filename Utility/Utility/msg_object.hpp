@@ -33,8 +33,6 @@ public:
 	virtual void handle_error(int) = 0;
 	virtual void do_close(void) = 0;
 	virtual mem::message* get_message(void) = 0;
-protected:
-	controler_iface* m_controler;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace msg

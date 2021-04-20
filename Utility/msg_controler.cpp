@@ -12,17 +12,6 @@ namespace Utility
 namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-controler_iface::controler_iface(void) : m_dispatcher(nullptr) {}
-controler_iface::~controler_iface(void) { m_dispatcher = nullptr; }
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void controler_iface::init(dispatcher* _dispatcher)
-{
-	if (m_dispatcher)
-		Clog::error_throw(errors::logic, "controler initialized!");
-
-	m_dispatcher = _dispatcher;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void controler_iface::post_node(channel_node* node)
 {
 	channel* p_channel = node->m_parent;
@@ -33,7 +22,7 @@ void controler_iface::post_node(channel_node* node)
 		return;
 	}
 
-	m_dispatcher->dispatch({ node,this });
+	controler::post_request(node);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void controler_iface::dispatch_node(channel_node* node)

@@ -39,7 +39,7 @@ protected:
 	message_t m_message;
 	std::atomic<state> m_state;
 	int m_close_reason;
-	bool m_init_complete;
+	std::atomic_bool m_init_complete;
 };
 #define UTILITY_MSG_SESSION_ADD_MESSAGE_BEGIN(_len)			\
 if (this->m_state != state::running)						\
@@ -47,8 +47,8 @@ if (this->m_state != state::running)						\
 std::lock_guard<std::mutex> lock(this->m_mutex);			\
 if (this->m_message.writable_size() < _len){				\
 	return false;											\
-}
-bool _flag = false;											\
+}															\
+	bool _flag = false;										\
 	char* _p = nullptr;										\
 	const char* _packet;									\
 	net_size_t _left, _size;
@@ -68,14 +68,14 @@ while (_left != 0) {								\
 }
 
 #define UTILITY_MSG_SESSION_ADD_MESSAGE_END()		\
-if (flag) m_controler->post_request(this, &m_message);
+if (_flag) m_controler->post_request(this);
 
 template<class pares_message_wrap>
 session<pares_message_wrap>::session(void)
 	: m_state(state::none)
 	, m_controler(nullptr)
 	, m_close_reason(0)
-	, m_init_complete(false)
+	, m_init_complete{ false }
 {
 }
 
@@ -87,10 +87,10 @@ session<pares_message_wrap>::~session(void)
 template<class pares_message_wrap>
 void session<pares_message_wrap>::init(std::size_t buffer_size, controler_iface* controler)
 {
-	if (m_init_complete) return;
+	bool exp = false;
+	if (!m_init_complete.compare_exchange_strong(exp,true)) return;
 	m_message.init(buffer_size);
 	m_controler = controler;
-	m_init_complete = true;
 }
 
 template<class pares_message_wrap>
@@ -103,7 +103,7 @@ void session<pares_message_wrap>::close(int st)
 	m_close_reason = st;
 	m_state = state::none;
 	if (m_message.go_bad())
-		m_controler->post_request(this, &m_message);
+		m_controler->post_request(this);
 }
 
 template<class pares_message_wrap>
