@@ -99,10 +99,8 @@ template<net::socket_type st, class pares_message_wrap>
 class protobuf_session : public net::session_wrap<st, pares_message_wrap>
 {
 public:
-	template<class T>
-	bool send_packet(std::uint32_t id,const T& data)
+	bool send_packet(std::uint32_t id,const google::protobuf::Message& data)
 	{
-		static_assert(std::is_base_of<google::protobuf::Message, T>::value, "data mast be google::protobuf::Message");
 		size_t data_size = data.ByteSizeLong();
 		if (data_size > std::numeric_limits<net_size_t>::max() - msg::MS_HEADER_LEN)
 		{

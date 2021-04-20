@@ -7,7 +7,6 @@
 #ifndef __MEM_STREAM_HPP__
 #define __MEM_STREAM_HPP__
 
-#include "mem_stream_node.hpp"
 #include "mem_buffer.hpp"
 #include <iostream>
 

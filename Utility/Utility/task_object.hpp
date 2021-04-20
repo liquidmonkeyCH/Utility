@@ -39,7 +39,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class object : public object_iface
 {
-	using task_t = std::function<void(object*)>;
+	using task_t = std::function<void(void)>;
 public:
 	object(void) = default;
 	virtual ~object(void) = default;
@@ -50,13 +50,17 @@ public:
 
 	template<class F, class... Args>
 	inline void schedule(F&& f, Args&&... args){
-		post(task_t(std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Args>(args)...)));
+		post(task_t(std::bind(std::forward<F>(f),std::forward<Args>(args)...)));
 	}
+
+	void close(void);
 protected:
 	void post(task_t&& task);
 	virtual void exec(void);
+	virtual void on_close(void) {}
 protected:
 	std::mutex m_mutex;
+	bool m_good = false;
 	std::queue<task_t> tasks;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////

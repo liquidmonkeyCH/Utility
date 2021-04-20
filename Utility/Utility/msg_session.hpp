@@ -73,7 +73,6 @@ if (_flag) m_controler->post_request(this);
 template<class pares_message_wrap>
 session<pares_message_wrap>::session(void)
 	: m_state(state::none)
-	, m_controler(nullptr)
 	, m_close_reason(0)
 	, m_init_complete{ false }
 {

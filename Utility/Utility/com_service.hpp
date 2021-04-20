@@ -44,7 +44,7 @@ private:								\
 	template<class> friend struct Utility::_impl::service_refence;
 #define DECLARE_SERVICE_DEFAULT(serviceId)	\
 public:									\
-	SERVICE_ID GetID(void)				\
+	SERVICE_ID GetId(void)				\
 	{									\
 		return (#serviceId);			\
 	}									\
@@ -52,7 +52,7 @@ public:									\
 	{									\
 		return (#serviceId);			\
 	}									\
-protected:								\
+private:								\
 	serviceId(void) = default;			\
 	~serviceId(void) = default;			\
 	template<class> friend struct Utility::_impl::service_refence;
