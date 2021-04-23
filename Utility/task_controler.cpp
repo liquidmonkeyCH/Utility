@@ -8,7 +8,6 @@
 #include "Utility/task_dispatcher.hpp"
 #include "Utility/task_channel.hpp"
 #include "Utility/task_object.hpp"
-#include "Utility/com_guard.hpp"
 
 namespace Utility
 {
@@ -37,9 +36,6 @@ void controler::dispatch_node(channel_node* node)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool controler::dispatch_channel(channel* p_channel)
 {
-#ifndef NDEBUG
-	com::guard<channel_node*> guard(p_channel, &channel_node::set_thread_id, &channel_node::reset_thread_id);
-#endif
 	channel_node* node = p_channel->m_post_root;
 	if (node->m_is_channel ? dispatch_channel(dynamic_cast<channel*>(node))
 		: dispatch_obj(dynamic_cast<object_iface*>(node)))
@@ -53,9 +49,6 @@ bool controler::dispatch_channel(channel* p_channel)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool controler::dispatch_obj(object_iface* obj) {
-#ifndef NDEBUG
-	com::guard<channel_node*> guard(obj, &channel_node::set_thread_id, &channel_node::reset_thread_id);
-#endif
 	return dynamic_cast<object*>(obj)->exec_task();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

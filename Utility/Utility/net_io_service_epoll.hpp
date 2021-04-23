@@ -10,7 +10,7 @@
 #include <thread>
 #include <list>
 #include <sys/epoll.h> 
-
+#include <atomic>
 #include "net_io_service.hpp"
 #include "mem_data_factory.hpp"
 

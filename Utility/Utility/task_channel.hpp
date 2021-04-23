@@ -6,8 +6,9 @@
 #ifndef __TASK_CHANNEL_HPP__
 #define __TASK_CHANNEL_HPP__
 
-#include "logger.hpp"
 #include <thread>
+#include <atomic>
+#include <mutex>
 
 namespace Utility
 {
@@ -33,13 +34,7 @@ protected:
 	const bool m_is_channel;
 	channel_node* m_prev;
 	channel_node* m_next;
-	channel* m_parent;
-#ifndef NDEBUG
-	std::thread::id m_thread_id;
-public:
-	void set_thread_id(void) { m_thread_id = std::this_thread::get_id(); }
-	void reset_thread_id(void) { m_thread_id = std::thread::id(); }
-#endif
+	std::atomic<channel*> m_parent;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class channel : public channel_node

@@ -5,6 +5,7 @@
 */
 
 #include "Utility/task_channel.hpp"
+#include "Utility/logger.hpp"
 
 namespace Utility
 {
@@ -14,7 +15,6 @@ namespace task
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void channel_node::clear(void)
 {
-	leave_channel();
 	m_prev = nullptr;
 	m_next = nullptr;
 	m_parent = nullptr;
@@ -22,8 +22,7 @@ void channel_node::clear(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void channel_node::leave_channel(void)
 {
-	if (m_parent)
-		m_parent->detach(this);
+	m_parent = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 channel::channel(void)
@@ -39,26 +38,19 @@ channel::~channel(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void channel::attach(channel_node* node)
 {
-#ifndef NDEBUG
-	if (std::this_thread::get_id() != node->m_thread_id)
-		Clog::error_throw(errors::logic, "plase executes attach on node own thread!");
-#endif
-	if (node->m_parent)
-		Clog::error_throw(errors::logic, "node already have channel!");
 	if (node == this)
 		Clog::error_throw(errors::logic, "can not attach self!");
-	node->m_parent = this;
+
+	channel* exp = nullptr;
+	if (!node->m_parent.compare_exchange_strong(exp,this))
+		Clog::error_throw(errors::logic, "node already have channel!");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void channel::detach(channel_node* node)
 {
-#ifndef NDEBUG
-	if (std::this_thread::get_id() != node->m_thread_id)
-		Clog::error_throw(errors::logic, "plase executes detach on node own thread!");
-#endif
-	if (node->m_parent != this)
+	channel* exp = this;
+	if (!node->m_parent.compare_exchange_strong(exp, nullptr))
 		Clog::error_throw(errors::logic, "node not belong to this channel!");
-	node->m_parent = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool channel::post_node(channel_node* node)

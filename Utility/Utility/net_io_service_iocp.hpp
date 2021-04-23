@@ -10,6 +10,7 @@
 
 #include <thread>
 #include <list>
+#include <atomic>
 #include "net_io_service.hpp"
 
 #include <MSWSock.h>

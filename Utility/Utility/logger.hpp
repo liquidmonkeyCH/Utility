@@ -29,7 +29,6 @@
 #ifndef __LOGGER_HPP__
 #define __LOGGER_HPP__
 
-#include <atomic>
 #include <stdarg.h>
 #include <cstdint>
 #include <mutex>
