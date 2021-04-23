@@ -45,7 +45,7 @@
     <ClInclude Include="Utility\mem_rotative_buffer.hpp" />
     <ClInclude Include="Utility\mem_stream.hpp" />
     <ClInclude Include="Utility\mem_stream_buffer.hpp" />
-    <ClInclude Include="Utility\msg_channel.hpp" />
+    <ClInclude Include="Utility\task_channel.hpp" />
     <ClInclude Include="Utility\msg_controler.hpp" />
     <ClInclude Include="Utility\msg_defines.hpp" />
     <ClInclude Include="Utility\msg_handler_manager_deque.hpp" />
@@ -80,14 +80,14 @@
     <ClCompile Include="application.cpp" />
     <ClCompile Include="com_md5.cpp" />
     <ClCompile Include="logger.cpp" />
-    <ClCompile Include="msg_channel.cpp" />
-    <ClCompile Include="msg_controler.cpp" />
+    <ClCompile Include="task_channel.cpp" />
     <ClCompile Include="net_framework.cpp" />
     <ClCompile Include="net_io_service.cpp" />
     <ClCompile Include="net_io_service_epoll.cpp" />
     <ClCompile Include="net_io_service_iocp.cpp" />
     <ClCompile Include="net_session.cpp" />
     <ClCompile Include="net_socket.cpp" />
+    <ClCompile Include="task_controler.cpp" />
     <ClCompile Include="task_dispatcher.cpp" />
     <ClCompile Include="task_object.cpp" />
   </ItemGroup>

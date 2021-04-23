@@ -1,29 +1,27 @@
 /**
-* @file msg_channel.hpp
+* @file task_channel.hpp
 *
 * @author Hourui (liquidmonkey)
 */
-#ifndef __MSG_CHANNEL_HPP__
-#define __MSG_CHANNEL_HPP__
+#ifndef __TASK_CHANNEL_HPP__
+#define __TASK_CHANNEL_HPP__
 
 #include "logger.hpp"
 #include <thread>
-#include "task_object.hpp"
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace msg
+namespace task
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class channel;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class channel_node : public task::object_iface
+class channel_node
 {
 public:
+	friend class controler;
 	friend class channel;
-	friend class controler_iface;
-	template<class message_wrap, class handler_manager> friend class controler_wrap;
 
 	channel_node(void) = delete;
 	channel_node(bool flag) :m_is_channel(flag), m_prev(nullptr), m_next(nullptr), m_parent(nullptr) {}
@@ -31,7 +29,6 @@ public:
 protected:
 	void clear(void);
 	void leave_channel(void);
-	virtual void exec(void);
 protected:
 	const bool m_is_channel;
 	channel_node* m_prev;
@@ -51,13 +48,12 @@ public:
 	channel(void);
 	virtual ~channel(void);
 	
-	friend class controler_iface;
+	friend class controler;
 public:
 	void attach(channel_node* node);
 	void detach(channel_node* node);
 private:
 	bool post_node(channel_node* node);
-	channel_node* front(void);
 	bool pop_front(void);
 private:
 	std::mutex m_mutex;
@@ -68,4 +64,4 @@ private:
 }//namespace task
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace Utility 
-#endif //__MSG_CHANNEL_HPP__
+#endif //__TASK_CHANNEL_HPP__

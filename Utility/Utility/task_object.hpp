@@ -9,6 +9,8 @@
 #include <mutex>
 #include <queue>
 #include <functional>
+#include "task_channel.hpp"
+#include "task_controler.hpp"
 
 namespace Utility
 {
@@ -16,23 +18,13 @@ namespace Utility
 namespace task
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class controler;
-class object_iface
+class object_iface : public channel_node
 {
 public:
-	struct task_info
-	{
-		object_iface* m_obj;
-		inline void exec(void) { m_obj->exec(); }
-	};
-	friend struct task_info;
-
-	object_iface(void) = default;
+	object_iface(void) : channel_node(false) {};
 	virtual ~object_iface(void) = default;
-
-	inline controler* get_controler(void) const { return m_controler; }
 protected:
-	virtual void exec(void) = 0;
+	inline void post_request(void) { m_controler->post_request(this); }
 protected:
 	controler* m_controler = nullptr;
 };
@@ -40,6 +32,7 @@ protected:
 class object : public object_iface
 {
 	using task_t = std::function<void(void)>;
+	friend class controler;
 public:
 	object(void) = default;
 	virtual ~object(void) = default;
@@ -49,16 +42,17 @@ public:
 	void init(controler* _controler);
 
 	template<class F, class... Args>
-	inline void schedule(F&& f, Args&&... args){
-		post(task_t(std::bind(std::forward<F>(f),std::forward<Args>(args)...)));
+	inline void exec(F&& f, Args&&... args){
+		post_call(task_t(std::bind(std::forward<F>(f),std::forward<Args>(args)...)));
 	}
 
 	void close(void);
 protected:
-	void post(task_t&& task);
-	virtual void exec(void);
 	virtual void on_close(void) {}
-protected:
+private:
+	void post_call(task_t&& task);
+	bool exec_task(void);
+private:
 	std::mutex m_mutex;
 	bool m_good = false;
 	std::queue<task_t> tasks;

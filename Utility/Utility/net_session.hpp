@@ -82,7 +82,7 @@ public:
 	session_wrap(void);
 	virtual ~session_wrap(void);
 protected:
-	void init(std::size_t recv_buffer_size, std::size_t send_buffer_size, msg::controler_iface* controler);
+	void init(std::size_t recv_buffer_size, std::size_t send_buffer_size, task::controler* controler);
 
 	void clear(void);
 	void do_close(void);

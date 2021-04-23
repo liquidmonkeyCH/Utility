@@ -66,7 +66,7 @@ protected:
 	std::size_t			m_recv_buffer_size = message_t::pre_block_size * 10;
 	std::size_t			m_send_buffer_size = message_t::pre_block_size * 10;
 	//! for msg handle
-	msg::controler_wrap< message_t, handler_manager> m_controler;
+	msg::controler< message_t, handler_manager> m_controler;
 
 	std::atomic_int			m_state;
 	std::promise<bool>		m_can_stop;

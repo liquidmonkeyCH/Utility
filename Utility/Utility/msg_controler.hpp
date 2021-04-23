@@ -18,37 +18,21 @@ namespace Utility
 namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class controler_iface : public task::controler
-{
-public:
-	controler_iface(void) = default;
-	~controler_iface(void) = default;
-
-	controler_iface(const controler_iface&) = delete;
-	controler_iface& operator=(const controler_iface&) = delete;
-	friend class channel_node;
-protected:
-	void post_node(channel_node* node);
-	void dispatch_node(channel_node* node);
-	bool dispatch_channel(channel* p_channel);
-	virtual bool dispatch_obj(object_iface* obj) = 0;
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class message_wrap,class handler_manager>
-class controler_wrap : public handler_manager,public controler_iface
+class controler : public handler_manager,public task::controler
 {
 public:
 	using message_t = message_wrap;
 public:
-	controler_wrap(void) = default;
-	~controler_wrap(void) = default;
+	controler(void) = default;
+	~controler(void) = default;
 
-	controler_wrap(const controler_wrap&) = delete;
-	controler_wrap& operator=(const controler_wrap&) = delete;
+	controler(const controler&) = delete;
+	controler& operator=(const controler&) = delete;
 public:
-	void post_request(task::object_iface* object)
+	inline void post_request(task::object_iface* object)
 	{
-		object_iface* obj = dynamic_cast<object_iface*>(object);
+		object_iface* obj = dynamic_cast<object_iface*>(obj);
 		message_t* message = dynamic_cast<message_t*>(obj->get_message());
 		switch (message->comfirm())
 		{
@@ -66,11 +50,12 @@ public:
 		}
 	}
 private:
-	bool dispatch_obj(object_iface* obj)
+	bool dispatch_obj(task::object_iface* object)
 	{
 #ifndef NDEBUG
-		com::guard<channel_node*> guard(obj, &channel_node::set_thread_id, &channel_node::reset_thread_id);
+		com::guard<task::channel_node*> guard(object, &task::channel_node::set_thread_id, &task::channel_node::reset_thread_id);
 #endif
+		object_iface* obj = dynamic_cast<object_iface*>(object);
 		mem::message* message = obj->get_message();
 		message_t* msg = dynamic_cast<message_t*>(message);
 

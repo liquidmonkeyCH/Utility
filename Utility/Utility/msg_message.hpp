@@ -21,7 +21,7 @@ namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 enum class state { ok, pending, error, bad };
-template<class message_wrap, class handler_manager> class controler_wrap;
+template<class message_wrap, class handler_manager> class controler;
 template<class pares_message_wrap> class session;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class buffer_type, net_size_t max_message_len>
@@ -35,7 +35,7 @@ public:
 	}
 	virtual ~_message_impl(void) = default;
 
-	template<class message_wrap, class handler_manager> friend class controler_wrap;
+	template<class message_wrap, class handler_manager> friend class controler;
 	template<net::socket_type st, class pares_message_wrap> friend class net::session_wrap;
 	template<class pares_message_wrap> friend class session;
 protected:

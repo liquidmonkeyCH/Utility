@@ -5,7 +5,6 @@
 */
 
 #include "Utility/task_object.hpp"
-#include "Utility/task_controler.hpp"
 
 namespace Utility
 {
@@ -13,48 +12,52 @@ namespace Utility
 namespace task
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void object::init(controler* _controler) {
+void object::init(controler* p_controler) {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	if (tasks.empty()) {
-		m_controler = _controler;
+	if (!m_good && tasks.empty()) {
+		m_controler = p_controler;
 		m_good = true;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void object::post(task_t&& task) {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	if (!m_good) return;
-	bool res = tasks.empty();
-	tasks.push(std::move(task));
-	if (res)
-		m_controler->post_request(this);
+void object::post_call(task_t&& task) {
+	bool need_post = false;{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (!m_good || !m_controler) return;
+		need_post = tasks.empty();
+		tasks.push(std::move(task));
+	}
+	if (need_post)
+		post_request();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void object::exec(void) {
+bool object::exec_task(void) {
 	std::unique_lock<std::mutex> lock(m_mutex);
 	if (!m_good) {
 		lock.unlock();
+		leave_channel();
 		on_close();
 		lock.lock();
 		while (!tasks.empty())tasks.pop();
-		return;
+		return false;
 	}
 	task_t task(std::move(tasks.front()));
 	lock.unlock();
 	task();
 	lock.lock();
 	tasks.pop();
-	if(!tasks.empty())
-		m_controler->post_request(this);
+	return tasks.empty() ? false : true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void object::close(void) {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	if (!m_good) return;
-	bool res = tasks.empty();
-	m_good = false;
-	if (res)
-		m_controler->post_request(this);
+	bool need_post = false; {
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (!m_good || !m_controler) return;
+		need_post = tasks.empty();
+		m_good = false;
+	}
+	if (need_post)
+		post_request();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace task

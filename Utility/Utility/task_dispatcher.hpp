@@ -7,7 +7,7 @@
 #define __TASK_DISPATCHER_HPP__
 
 #include "com_thread_pool.hpp"
-#include "task_object.hpp"
+#include "task_controler.hpp"
 
 namespace Utility
 {
@@ -17,7 +17,7 @@ namespace task
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class dispatcher
 {
-	using task_info = object_iface::task_info;
+	using task_info = controler::task_info;
 	friend class controler;
 public:
 	dispatcher(void);

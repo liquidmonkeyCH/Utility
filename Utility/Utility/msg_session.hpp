@@ -25,13 +25,13 @@ public:
 	session(void);
 	virtual ~session(void);
 
-	void init(std::size_t buffer_size, controler_iface* controler);
+	void init(std::size_t buffer_size, task::controler* controler);
 	bool add_message_ex(const char* msg, std::size_t len);
 protected:
 	mem::message* get_message(void) { return &m_message; }
 
 	void close(int st);
-	void do_close(void) { on_close(m_close_reason);  m_message.clear(); }
+	void do_close(void) { leave_channel(); on_close(m_close_reason);  m_message.clear(); }
 	virtual void on_close(int) = 0;
 protected:
 	enum class state { none, running, closing };
@@ -68,7 +68,7 @@ while (_left != 0) {								\
 }
 
 #define UTILITY_MSG_SESSION_ADD_MESSAGE_END()		\
-if (_flag) m_controler->post_request(this);
+if (_flag) post_request();
 
 template<class pares_message_wrap>
 session<pares_message_wrap>::session(void)
@@ -84,7 +84,7 @@ session<pares_message_wrap>::~session(void)
 }
 
 template<class pares_message_wrap>
-void session<pares_message_wrap>::init(std::size_t buffer_size, controler_iface* controler)
+void session<pares_message_wrap>::init(std::size_t buffer_size, task::controler* controler)
 {
 	bool exp = false;
 	if (!m_init_complete.compare_exchange_strong(exp,true)) return;
@@ -102,7 +102,7 @@ void session<pares_message_wrap>::close(int st)
 	m_close_reason = st;
 	m_state = state::none;
 	if (m_message.go_bad())
-		m_controler->post_request(this);
+		post_request();
 }
 
 template<class pares_message_wrap>

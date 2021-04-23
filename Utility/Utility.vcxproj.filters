@@ -105,9 +105,6 @@
     <ClInclude Include="Utility\mem_stream_buffer.hpp">
       <Filter>Utility\mem</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\msg_channel.hpp">
-      <Filter>Utility\msg</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\msg_controler.hpp">
       <Filter>Utility\msg</Filter>
     </ClInclude>
@@ -171,6 +168,9 @@
     <ClInclude Include="Utility\task_object.hpp">
       <Filter>Utility\task</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\task_channel.hpp">
+      <Filter>Utility\task</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utility\mem_data_factory.inl">
@@ -202,12 +202,6 @@
     <ClCompile Include="com_md5.cpp">
       <Filter>Utility\com</Filter>
     </ClCompile>
-    <ClCompile Include="msg_channel.cpp">
-      <Filter>Utility\msg</Filter>
-    </ClCompile>
-    <ClCompile Include="msg_controler.cpp">
-      <Filter>Utility\msg</Filter>
-    </ClCompile>
     <ClCompile Include="net_framework.cpp">
       <Filter>Utility\net</Filter>
     </ClCompile>
@@ -230,6 +224,12 @@
       <Filter>Utility\task</Filter>
     </ClCompile>
     <ClCompile Include="task_object.cpp">
+      <Filter>Utility\task</Filter>
+    </ClCompile>
+    <ClCompile Include="task_channel.cpp">
+      <Filter>Utility\task</Filter>
+    </ClCompile>
+    <ClCompile Include="task_controler.cpp">
       <Filter>Utility\task</Filter>
     </ClCompile>
   </ItemGroup>

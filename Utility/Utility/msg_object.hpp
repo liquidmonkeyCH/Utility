@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <mutex>
 
-#include "msg_channel.hpp"
+#include "task_object.hpp"
 
 namespace Utility
 {
@@ -18,13 +18,10 @@ namespace Utility
 namespace msg
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class dispatcher;
-class controler_iface;
-////////////////////////////////////////////////////////////////////////////////////////////////////
-class object_iface : public channel_node
+class object_iface : public task::object_iface
 {
 public:
-	object_iface(void) : channel_node(false) {};
+	object_iface(void) = default;
 	virtual ~object_iface(void) = default;
 
 	object_iface(const object_iface&) = delete;

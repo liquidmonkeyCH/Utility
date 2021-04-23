@@ -28,7 +28,7 @@ public:
 		static_assert(max_message_len > sizeof(std::uint32_t), "max_message_len out of range!");
 	}
 	virtual ~comfirmer(void) = default;
-	template<class message_wrap, class handler_manager> friend class msg::controler_wrap;
+	template<class message_wrap, class handler_manager> friend class msg::controler;
 private:
 	state comfirm(void)
 	{
