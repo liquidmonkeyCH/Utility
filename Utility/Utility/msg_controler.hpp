@@ -9,8 +9,6 @@
 #include "task_controler.hpp"
 #include "msg_message.hpp"
 #include "msg_object.hpp"
-#include "com_guard.hpp"
-#include "logger.hpp"
 
 namespace Utility
 {
@@ -52,9 +50,6 @@ public:
 private:
 	bool dispatch_obj(task::object_iface* object)
 	{
-#ifndef NDEBUG
-		com::guard<task::channel_node*> guard(object, &task::channel_node::set_thread_id, &task::channel_node::reset_thread_id);
-#endif
 		object_iface* obj = dynamic_cast<object_iface*>(object);
 		mem::message* message = obj->get_message();
 		message_t* msg = dynamic_cast<message_t*>(message);
