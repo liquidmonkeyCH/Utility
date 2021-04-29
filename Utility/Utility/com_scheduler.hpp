@@ -60,7 +60,7 @@ private:
 	com::threadpool m_threadpool;
 	std::thread m_main_thread;
 	std::multimap<time_point, timer> tasks;
-	mem::data_factory_ex<event_t, 50> m_event_pool;
+	mem::data_pool<event_t, 50, 10, 10> m_event_pool;
 	std::mutex mtx;
 	std::condition_variable cv;
 	std::atomic_size_t m_ntasks = { 0 };

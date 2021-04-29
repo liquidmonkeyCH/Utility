@@ -9,6 +9,7 @@
 #include <mutex>
 #include <queue>
 #include <functional>
+#include <assert.h>
 #include "task_channel.hpp"
 #include "task_controler.hpp"
 
@@ -25,15 +26,19 @@ namespace wrap
 	{
 		static_assert(std::is_base_of<channel_node, T>::value, "T must Inherits from channel_node");
 	public:
-		object_channel(void) { channel_node::enter_channel(&m_channel); }
-		virtual ~object_channel(void) = default;
+		object_channel(void){
+			m_channel = dispatcher::malloc();
+			assert(m_channel);
+			channel_node::enter_channel(m_channel); 
+		}
+		virtual ~object_channel(void) { if(m_channel) dispatcher::free(m_channel);}
 		object_channel(const object_channel&) = delete;
 		object_channel& operator=(const object_channel&) = delete;
-		channel* to_channel(void) { return &m_channel; }
-		inline virtual void enter_channel(channel* p_channel) { m_channel.enter_channel(p_channel); }
-		inline virtual void leave_channel(void) { m_channel.leave_channel(); }
+		channel* to_channel(void) { return m_channel; }
+		inline virtual void enter_channel(channel* p_channel) { m_channel->enter_channel(p_channel); }
+		inline virtual void leave_channel(void) { m_channel->leave_channel(); }
 	private:
-		channel m_channel;
+		channel* m_channel = nullptr;
 	};
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

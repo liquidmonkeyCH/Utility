@@ -290,7 +290,7 @@ data_factory<T, 0>::clear(void)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T>
 inline void
-data_factory<T, 0>::init(typename data_factory<T, 0>::size_type size)
+data_factory<T, 0>::init(size_t size)
 {
 	assert(size != 0);
 	assert(size < this->_used);
@@ -328,7 +328,7 @@ data_pool<T, N, G, Cache>::~data_pool(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N, std::uint64_t G, size_t Cache>
 inline void
-data_pool<T, N, G, Cache>::init(typename data_pool<T, N, G, Cache>::size_type size, typename data_pool<T, N, G, Cache>::size_type grow)
+data_pool<T, N, G, Cache>::init(size_t size, size_t grow)
 {
 	m_main_trunk.init(size);
 	if (m_grow > 0) return;

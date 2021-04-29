@@ -75,7 +75,7 @@ private:
 	const char* _next(net_size_t& size, net_size_t limit);
 public:
 	using stream_node_t = stream_node<block_size>;
-	using factory_t = mem::data_factory_ex<stream_node_t, 0, mem::factory_cache_type::DYNAMIC>;
+	using factory_t = mem::data_pool<stream_node_t, 0, 0, mem::factory_cache_type::DYNAMIC>;
 	static constexpr std::size_t max_message_len = ULONG_MAX;
 	static constexpr std::size_t pre_block_size = block_size;
 private:

@@ -129,15 +129,6 @@ private:
 	std::atomic<size_t>		m_size;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/*template<class Factory>
-struct factory_node : public Factory
-{
-	factory_node(void) :m_prev(nullptr), m_next(nullptr) {}
-	void clear(void) { m_prev = nullptr; m_next = nullptr; Factory::clear(); }
-	factory_node* m_prev;
-	factory_node* m_next;
-};*/
-////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Factory, size_t Cache>
 class allocator_wrap
 {
@@ -156,6 +147,38 @@ public:
 	static void set_cache(size_t size) { get_allocator()->set_cache(size); }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class Factory>
+class thread_safe
+{
+	using value_t = typename Factory::value_t;
+public:
+	thread_safe(void) = default;
+	~thread_safe(void) { clear(); }
+
+	inline void init(size_t size = 0, size_t grow = 0){
+		static std::once_flag oc;
+		std::call_once(oc, [this]() { this->m_factory.init(size, grow); });
+	}
+
+	inline auto malloc(void)->value_t* {
+		std::lock_guard<std::mutex> lock(m_mutex);
+		return this->m_factory.malloc();
+	}
+
+	inline bool free(value_t* p){
+		std::lock_guard<std::mutex> lock(m_mutex);
+		return this->m_factory.free(p);
+	}
+
+	inline void clear(void){
+		std::lock_guard<std::mutex> lock(m_mutex);
+		this->m_factory.clear();
+	}
+private:
+	std::mutex m_mutex;
+	Factory m_factory;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace factory
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace _impl
@@ -167,6 +190,7 @@ template<class T, std::uint64_t N = 0>
 class data_factory : public _impl::factory::data_factory<T,N>
 {
 public:
+	using value_t = T;
 	using base = _impl::factory::data_factory<T,N>;
 	using size_type = typename base::size_type;
 	using iterator = typename base::iterator;
@@ -183,7 +207,7 @@ public:
 	data_factory(const data_factory&&) = delete;
 	data_factory& operator=(const data_factory&&) = delete;
 
-	void init(size_type size = 0) { (void)size; clear(); }
+	void init(size_t size = 0) { (void)size; clear(); }
 	void clear(void);
 };
 
@@ -204,7 +228,7 @@ public:
 	data_factory(const data_factory&&) = delete;
 	data_factory<T, 0>& operator=(const data_factory&&) = delete;
 
-	void init(size_type size);
+	void init(size_t size);
 	void clear(void);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,19 +237,20 @@ class data_pool : public
 	_impl::factory::allocator_wrap< data_factory<T, G>, Cache>
 {
 public:
+	using value_t = T;
 	using base_t = data_factory<T, G>;
 	using main_t = data_factory<T, N>;
 	using allocator_t = _impl::factory::allocator<base_t, Cache>;
 	using chunks_t = std::vector<base_t*>;
 	using size_type = typename base_t::size_type;
 	using allocator_wrap_t = _impl::factory::allocator_wrap<base_t, Cache>;
-	static constexpr size_t main_trunk = size_t(-1);
 private:
+	static constexpr size_t main_trunk = size_t(-1);
 	chunks_t	m_chunks;
 	size_t		m_alloc_chunk;
 	size_t		m_dealloc_chunk;
 	size_type	m_grow;
-	data_factory<T, N> m_main_trunk;
+	main_t		m_main_trunk;
 private:
 	auto npos(T* p, size_t& n)->size_type;
 public:
@@ -238,62 +263,17 @@ public:
 	data_pool(const data_pool&&) = delete;
 	data_pool& operator=(const data_pool&&) = delete;
 
-	void init(size_type size = 0, size_type grow = 0);
+	void init(size_t size = 0, size_t grow = 0);
 	void clear(void);
 
 	T* malloc(void);
 	bool free(T* p);
 };
-template<class T, std::uint64_t N=0, size_t Cache = factory_cache_type::NO_CACHE>
-using data_factory_ex = data_pool<T, N, N, Cache>;
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N = 0, std::uint64_t G = 0, size_t Cache = factory_cache_type::NO_CACHE>
-class thread_safe_data_pool
-	
-{	
-public:
-	thread_safe_data_pool(void) {}
-
-	~thread_safe_data_pool(void) { clear(); }
-
-	thread_safe_data_pool(const thread_safe_data_pool&) = delete;
-	thread_safe_data_pool& operator=(const thread_safe_data_pool&) = delete;
-
-	thread_safe_data_pool(const thread_safe_data_pool&&) = delete;
-	thread_safe_data_pool& operator=(const thread_safe_data_pool&&) = delete;
-
-	void init(typename data_factory<T, G>::size_type size = 0, typename data_factory<T, G>::size_type grow = 0)
-	{
-		static std::once_flag oc;
-		std::call_once(oc, [this]() { m_dataPool.init(size, grow); });
-	}
-
-	T* malloc(void)
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-		return m_dataPool.malloc();
-	}
-
-	bool free(T* p)
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-		return m_dataPool.free(p);
-	}
-
-	void clear(void)
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-		m_dataPool.clear();
-	}
-
-private:
-	std::mutex					m_mutex;
-	data_pool< T, N, G, Cache > m_dataPool;
-};
-
-template<class T, std::uint64_t N = 0, size_t Cache = factory_cache_type::NO_CACHE>
-using thread_safe_data_factory_ex = thread_safe_data_pool<T, N, N, Cache>;
-
+using data_pool_s = _impl::factory::thread_safe<data_pool<T, N, G, Cache>>;
+template<class T, std::uint64_t N = 0>
+using data_factory_s = _impl::factory::thread_safe<data_factory<T, N>>;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 } // mem
 ////////////////////////////////////////////////////////////////////////////////////////////////////
