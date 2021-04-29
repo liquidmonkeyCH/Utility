@@ -27,9 +27,11 @@ public:
 	channel_node(void) = delete;
 	channel_node(bool flag) :m_is_channel(flag), m_prev(nullptr), m_next(nullptr), m_parent(nullptr) {}
 	virtual ~channel_node(void) { clear(); }
+
+	inline virtual void enter_channel(channel* p_channel) { m_parent = p_channel; }
+	inline virtual void leave_channel(void) { m_parent = nullptr; }
 protected:
-	void clear(void);
-	void leave_channel(void);
+	inline void clear(void){ m_prev = nullptr;m_next = nullptr;m_parent = nullptr; }
 protected:
 	const bool m_is_channel;
 	channel_node* m_prev;
@@ -44,9 +46,6 @@ public:
 	virtual ~channel(void);
 	
 	friend class controler;
-public:
-	void attach(channel_node* node);
-	void detach(channel_node* node);
 private:
 	bool post_node(channel_node* node);
 	bool pop_front(void);

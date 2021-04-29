@@ -24,6 +24,8 @@ public:
 public:
 	session(void);
 	virtual ~session(void);
+	session(const session&) = delete;
+	session& operator=(const session&) = delete;
 
 	void init(std::size_t buffer_size, task::controler* controler);
 	bool add_message_ex(const char* msg, std::size_t len);
@@ -41,6 +43,10 @@ protected:
 	int m_close_reason;
 	std::atomic_bool m_init_complete;
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class pares_message_wrap>
+using session_channel = task::wrap::object_channel<session<pares_message_wrap>>;
+////////////////////////////////////////////////////////////////////////////////////////////////////
 #define UTILITY_MSG_SESSION_ADD_MESSAGE_BEGIN(_len)			\
 if (this->m_state != state::running)						\
 		return false;										\

@@ -18,6 +18,25 @@ namespace Utility
 namespace task
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace wrap
+{
+	template<class T>
+	class object_channel : public T
+	{
+		static_assert(std::is_base_of<channel_node, T>::value, "T must Inherits from channel_node");
+	public:
+		object_channel(void) { channel_node::enter_channel(&m_channel); }
+		virtual ~object_channel(void) = default;
+		object_channel(const object_channel&) = delete;
+		object_channel& operator=(const object_channel&) = delete;
+		channel* to_channel(void) { return &m_channel; }
+		inline virtual void enter_channel(channel* p_channel) { m_channel.enter_channel(p_channel); }
+		inline virtual void leave_channel(void) { m_channel.leave_channel(); }
+	private:
+		channel m_channel;
+	};
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
 class object_iface : public channel_node
 {
 public:
@@ -57,6 +76,8 @@ private:
 	bool m_good = false;
 	std::queue<task_t> tasks;
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////
+using object_channel = wrap::object_channel<object>;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace task
 ////////////////////////////////////////////////////////////////////////////////////////////////////
