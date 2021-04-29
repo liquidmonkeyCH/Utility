@@ -42,10 +42,13 @@ bool controler::dispatch_channel(channel* p_channel)
 	{ 
 		if(p_channel == node->m_parent)
 			return p_channel->post_node(node);
-		else
-			post_node(node);
+
+		bool need_post = p_channel->pop_front();
+		post_node(node);
+		return need_post;
 	}
-	return p_channel->pop_front();
+	else
+		return p_channel->pop_front();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool controler::dispatch_obj(object_iface* obj) {
