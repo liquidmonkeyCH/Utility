@@ -90,7 +90,7 @@ private:
 		unsigned int m_port;
 		unsigned int m_idel;
 
-		mem::data_pool<mysqlpp::Connection, 20,5> m_pool;
+		mem::data_pool<mysqlpp::Connection,5> m_pool;
 	};
 
 	template<dsn_t dsn>

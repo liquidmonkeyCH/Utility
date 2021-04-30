@@ -118,7 +118,7 @@ class allocator<Factory, mem::factory_cache_type::DYNAMIC>
 {
 public:
 	using size_type = typename Factory::size_type;
-	allocator(void):m_size(10){}
+	allocator(void) = default;
 
 	void set_cache(size_t size) { m_size = size; }
 	Factory* malloc(size_type size);
@@ -126,7 +126,8 @@ public:
 private:
 	std::mutex				m_mutex;
 	std::queue<Factory*>	m_cache;
-	std::atomic<size_t>		m_size;
+	std::atomic<size_t>		m_size = 0;
+	size_t					m_used = 0;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class Factory, size_t Cache>
@@ -150,14 +151,19 @@ public:
 template<class Factory>
 class thread_safe
 {
+public:
+	using base = Factory;
 	using value_t = typename Factory::value_t;
+	using super = typename Factory::base;
 public:
 	thread_safe(void) = default;
 	~thread_safe(void) { clear(); }
 
 	inline void init(size_t size = 0, size_t grow = 0){
-		static std::once_flag oc;
-		std::call_once(oc, [this]() { this->m_factory.init(size, grow); });
+		static std::atomic_bool flag = false;
+		bool exp = false;
+		if (flag.compare_exchange_strong(exp, true))
+			this->m_factory.init(size, grow);
 	}
 
 	inline auto malloc(void)->value_t* {
@@ -232,18 +238,18 @@ public:
 	void clear(void);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T, std::uint64_t N = 0, std::uint64_t G = 0, size_t Cache = factory_cache_type::NO_CACHE>
+template<class T, std::uint64_t N = 0, std::uint64_t G = N, size_t Cache = factory_cache_type::DYNAMIC>
 class data_pool : public
 	_impl::factory::allocator_wrap< data_factory<T, G>, Cache>
 {
+	using node_t = data_factory<T, G>;
+	using main_t = data_factory<T, N>;
+	using allocator_t = _impl::factory::allocator<node_t, Cache>;
+	using chunks_t = std::vector<node_t*>;
 public:
 	using value_t = T;
-	using base_t = data_factory<T, G>;
-	using main_t = data_factory<T, N>;
-	using allocator_t = _impl::factory::allocator<base_t, Cache>;
-	using chunks_t = std::vector<base_t*>;
-	using size_type = typename base_t::size_type;
-	using allocator_wrap_t = _impl::factory::allocator_wrap<base_t, Cache>;
+	using size_type = typename node_t::size_type;
+	using base = _impl::factory::allocator_wrap<node_t, Cache>;
 private:
 	static constexpr size_t main_trunk = size_t(-1);
 	chunks_t	m_chunks;
@@ -270,7 +276,7 @@ public:
 	bool free(T* p);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T, std::uint64_t N = 0, std::uint64_t G = 0, size_t Cache = factory_cache_type::NO_CACHE>
+template<class T, std::uint64_t N = 0, std::uint64_t G = N, size_t Cache = factory_cache_type::DYNAMIC>
 using data_pool_s = _impl::factory::thread_safe<data_pool<T, N, G, Cache>>;
 template<class T, std::uint64_t N = 0>
 using data_factory_s = _impl::factory::thread_safe<data_factory<T, N>>;

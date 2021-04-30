@@ -200,6 +200,7 @@ allocator<Factory, mem::factory_cache_type::DYNAMIC>::malloc(typename allocator<
 			p = m_cache.front();
 			m_cache.pop();
 		}
+		++m_used;
 	}
 	if (!p) p = new Factory;
 	p->init(size);
@@ -210,14 +211,24 @@ template<class Factory>
 inline void
 allocator<Factory, mem::factory_cache_type::DYNAMIC>::free(Factory* p)
 {
-	{
+	do{
+		std::size_t exp = m_size;
+		bool dynamic = (0 == exp);
 		std::lock_guard<std::mutex> lock(m_mutex);
-		if (m_cache.size() < m_size)
-		{
+		--m_used;
+		std::size_t size = m_cache.size();
+		if(dynamic) exp = ((m_used + size + 2) >> 1) + 1;
+		if (size < exp) {
 			m_cache.push(p);
 			return;
 		}
-	}
+		if (!dynamic) break;
+		while (size > exp) {
+			delete m_cache.front();
+			m_cache.pop();
+			--size;
+		};
+	} while (false);
 	delete p;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +352,7 @@ template<class T, std::uint64_t N, std::uint64_t G, size_t Cache>
 inline void
 data_pool<T, N, G, Cache>::clear(void)
 {
-	allocator_t* _alloc = allocator_wrap_t::get_allocator();
+	allocator_t* _alloc = base::get_allocator();
 	m_main_trunk.clear();
 	for (auto it = m_chunks.begin(); it != m_chunks.end(); ++it)
 	{
@@ -359,11 +370,11 @@ inline auto
 data_pool<T, N, G, Cache>::npos(T* p, size_t& n)->size_type
 {
 	if(m_dealloc_chunk == main_trunk)
-		return base_t::_zero;
+		return node_t::_zero;
 
 	n = m_dealloc_chunk;
 	size_type pos = m_chunks[n]->npos(p);
-	if (pos != base_t::_zero)
+	if (pos != node_t::_zero)
 		return pos;
 
 	size_t total = m_chunks.size();
@@ -373,7 +384,7 @@ data_pool<T, N, G, Cache>::npos(T* p, size_t& n)->size_type
 		n = m_dealloc_chunk + i;
 		if (n >= total) n -= total;
 		pos = m_chunks[n]->npos(p);
-		if (pos != base_t::_zero)
+		if (pos != node_t::_zero)
 			return pos;
 
 		m = n;
@@ -381,11 +392,11 @@ data_pool<T, N, G, Cache>::npos(T* p, size_t& n)->size_type
 		if (m == n) break;
 
 		pos = m_chunks[n]->npos(p);
-		if (pos != base_t::_zero)
+		if (pos != node_t::_zero)
 			return pos;
 	}
 
-	return base_t::_zero;
+	return node_t::_zero;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N, std::uint64_t G, size_t Cache>
@@ -414,7 +425,7 @@ data_pool<T, N, G, Cache>::malloc(void)
 			return p;
 		}
 
-	m_chunks.push_back(allocator_wrap_t::get_allocator()->malloc(m_grow));
+	m_chunks.push_back(base::get_allocator()->malloc(m_grow));
 	return m_chunks[m_alloc_chunk]->malloc();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -427,8 +438,8 @@ data_pool<T, N, G, Cache>::free(T* p)
 
 	size_t n;
 	size_type _pos = npos(p, n);
-	assert(_pos != base_t::_zero);
-	if (_pos == base_t::_zero)
+	assert(_pos != node_t::_zero);
+	if (_pos == node_t::_zero)
 		return false;
 
 	m_chunks[n]->free(p);
@@ -443,14 +454,14 @@ data_pool<T, N, G, Cache>::free(T* p)
 
 	if (m_chunks[n]->used() == 0)
 	{
-		allocator_wrap_t::get_allocator()->free(m_chunks[n]);
+		base::get_allocator()->free(m_chunks[n]);
 		m_chunks.pop_back();
 		if (m_alloc_chunk == n)
 			m_alloc_chunk = 0;
 		--n;
 	}
 
-	base_t* _chunk = m_chunks[n];
+	node_t* _chunk = m_chunks[n];
 	m_chunks[n] = m_chunks[m_dealloc_chunk];
 	m_chunks[m_dealloc_chunk] = _chunk;
 

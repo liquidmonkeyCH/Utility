@@ -21,7 +21,7 @@ class dispatcher
 {
 	using task_info = controler::task_info;
 	friend class controler;
-	using channel_pool_t = mem::data_pool_s<task::channel, 50, 10, 10>;
+	using channel_pool_t = mem::data_pool_s<task::channel,10>;
 public:
 	dispatcher(void);
 	~dispatcher(void);
