@@ -34,7 +34,7 @@ namespace wrap
 		virtual ~object_channel(void) { if(m_channel) dispatcher::free(m_channel);}
 		object_channel(const object_channel&) = delete;
 		object_channel& operator=(const object_channel&) = delete;
-		channel* to_channel(void) { return m_channel; }
+		inline channel* to_channel(void) { return m_channel; }
 		inline virtual void enter_channel(channel* p_channel) { m_channel->enter_channel(p_channel); }
 		inline virtual void leave_channel(void) { m_channel->leave_channel(); }
 	private:
