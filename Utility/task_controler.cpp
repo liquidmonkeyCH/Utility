@@ -8,6 +8,14 @@
 #include "Utility/task_dispatcher.hpp"
 #include "Utility/task_channel.hpp"
 #include "Utility/task_object.hpp"
+#include "Utility/logger.hpp"
+
+#define CONTROLER_LOG
+#ifdef CONTROLER_LOG
+#define CONTROLER_WARN(exp,fmt,...) if(!(exp)) Clog::warn(fmt,##__VA_ARGS__);
+#else
+#define CONTROLER_WARN(exp,fmt,...)
+#endif
 
 namespace Utility
 {
@@ -29,6 +37,7 @@ void controler::post_node(channel_node* node)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void controler::dispatch_node(channel_node* node)
 {
+	CONTROLER_WARN(node->m_parent == nullptr, "node enter the channel in an unusual manner!");
 	if (node->m_is_channel ? dispatch_channel(dynamic_cast<channel*>(node))
 		: dispatch_obj(dynamic_cast<object_iface*>(node)))
 		post_node(node);
@@ -37,6 +46,7 @@ void controler::dispatch_node(channel_node* node)
 bool controler::dispatch_channel(channel* p_channel)
 {
 	channel_node* node = p_channel->m_post_root;
+	CONTROLER_WARN(node->m_parent == p_channel, "node change the channel in an unusual manner!");
 	if (node->m_is_channel ? dispatch_channel(dynamic_cast<channel*>(node))
 		: dispatch_obj(dynamic_cast<object_iface*>(node)))
 	{ 
