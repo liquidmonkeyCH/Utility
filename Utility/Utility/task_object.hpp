@@ -10,8 +10,7 @@
 #include <queue>
 #include <functional>
 #include <assert.h>
-#include "task_channel.hpp"
-#include "task_controler.hpp"
+#include "task_dispatcher.hpp"
 
 namespace Utility
 {
