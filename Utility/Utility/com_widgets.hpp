@@ -25,15 +25,16 @@ public:
 	future(T& data) :m_data(data){}
 
 	template<class M>
-	inline T set(M&& value) { T m_temp = m_data; m_data = value; return std::move(m_temp); }
+	inline T set(M&& value) { m_temp = m_data; m_data = value; return std::move(m_temp); }
 private:
 	T&	m_data;
+	T	m_temp;
 };
 ////////////////////////////////////////////////////////////////////////////////
 }//namespace __impl
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
-__impl::future<T> future(T& data) { return std::move(__impl::future<T>(data)); }
+inline __impl::future<T> future(T& data) { return std::move(__impl::future<T>(data)); }
 ////////////////////////////////////////////////////////////////////////////////
 }// namespace com 
 ////////////////////////////////////////////////////////////////////////////////
