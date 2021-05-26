@@ -28,9 +28,9 @@ public:
 	controler(const controler&) = delete;
 	controler& operator=(const controler&) = delete;
 public:
-	inline void post_request(task::object_iface* object)
+	void post_request(task::object_iface* object)
 	{
-		object_iface* obj = dynamic_cast<object_iface*>(obj);
+		object_iface* obj = dynamic_cast<object_iface*>(object);
 		message_t* message = dynamic_cast<message_t*>(obj->get_message());
 		switch (message->comfirm())
 		{
