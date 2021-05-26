@@ -32,11 +32,6 @@ void controler::post_node(channel_node* node)
 	m_dispatcher->dispatch({ node,this });
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void controler::post_request(object_iface* object)
-{ 
-	post_node(dynamic_cast<channel_node*>(object)); 
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void controler::dispatch_node(channel_node* node)
 {
 	CONTROLER_WARN(node->m_parent == nullptr, "node enter the channel in an unusual manner!");

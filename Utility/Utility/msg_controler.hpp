@@ -28,7 +28,7 @@ public:
 	controler(const controler&) = delete;
 	controler& operator=(const controler&) = delete;
 public:
-	void post_request(task::object_iface* object)
+	inline void post_request(task::channel_node* object)
 	{
 		object_iface* obj = dynamic_cast<object_iface*>(object);
 		message_t* message = dynamic_cast<message_t*>(obj->get_message());
