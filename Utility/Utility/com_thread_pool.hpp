@@ -10,10 +10,12 @@
 #include <functional>
 #include <thread>
 #include <queue>
+#include <map>
 #include <mutex>
 #include <condition_variable>
 #include <future>
 #include <atomic>
+
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,7 @@ protected:
 	std::mutex mtx;
 	std::condition_variable cv;
 	size_t m_size = 0;
-	std::atomic_size_t m_working = { 0 };
+	std::atomic_size_t m_suspend = { 0 };
 	std::atomic_size_t m_ntasks = { 0 };
 	state m_state = state::none;
 public:
@@ -122,20 +124,21 @@ public:
 		return true;
 	}
 	// 返回当前线程池线程总数
-	size_t size(void) { return m_size; }
-	size_t work_size(void) { return m_working; }
-	size_t task_size(void) { return m_ntasks; }
-private:
+	virtual inline size_t size(void) { return m_size; }
+	inline size_t suspend_size(void) { return m_suspend; }
+	inline size_t task_size(void) { return m_ntasks; }
+protected:
 	task_t get_task(void)
 	{
+		++m_suspend;
 		std::unique_lock<std::mutex> lock(mtx);
 		while (tasks.empty() && m_state != state::none)
 			cv.wait(lock);
 
+		--m_suspend;
 		if (m_state == state::none)
 			return task_t();
 
-		++m_working;
 		task_t task(std::move(tasks.front()));
 		tasks.pop();
 
@@ -145,29 +148,32 @@ private:
 		return task;
 	}
 
-	void _run(void)
+	void _run(bool extra)
 	{
-		++m_working;
 		while (true)
 		{
-			--m_working;
 			if (task_t task = get_task())
 				task();
 			else
 				break;
+
+			if (_check(extra))
+				break;
 		}
 	}
+
+	virtual inline bool _check(bool extra) { (void)extra; return false; }
 protected:
-	void _init(void)
+	virtual void _init(void)
 	{
 		for (size_t i = 0; i < m_size; ++i)
-			pool[i] = std::thread(&thread_pool_wrap::_run, this);
+			pool[i] = std::thread(&thread_pool_wrap::_run, this, false);
 
 		std::lock_guard<std::mutex> lock(mtx);
 		m_state = state::start;
 	}
 
-	void _destory(void)
+	virtual void _destory(void)
 	{
 		std::unique_lock<std::mutex> lock(mtx);
 		if (m_state == state::none)
@@ -235,6 +241,77 @@ public:
 		this->_init();
 	}
 };
+
+template<class T = std::function<void()>>
+class thread_pool_ex : public thread_pool<0, T>
+{
+	std::condition_variable grow_cv;
+	std::mutex grow_mutex;
+	std::map<std::thread::id,std::thread> m_extra_pool;
+	std::thread m_grow_main;
+	std::atomic_bool m_growing = false;
+	std::atomic_uint8_t m_grow = 5;
+	using super = thread_pool<0, T>;
+
+	void _grow(void) 
+	{
+		while (this->m_state != super::base::state::none) 
+		{
+			std::unique_lock<std::mutex> lock(grow_mutex);
+			grow_cv.wait(lock);
+			if (this->m_state == super::base::state::none)
+				break;
+
+			for (int i = 0; i < m_grow; ++i)
+			{
+				std::thread th(&thread_pool_ex::_run, this, true);
+				m_extra_pool.emplace(th.get_id(),std::move(th));
+			}
+				
+
+			m_growing = false;
+		}
+
+		std::lock_guard<std::mutex> lock(grow_mutex);
+		for (auto& th : m_extra_pool)
+			th.second.join();
+
+		m_extra_pool.clear();
+	}
+
+	inline bool _check(bool extra)
+	{
+		if (extra && this->m_suspend > int(m_grow) * 2) {
+			std::lock_guard<std::mutex> lock(grow_mutex);
+			auto iter = m_extra_pool.find(std::this_thread::get_id());
+			iter->second.detach();
+			m_extra_pool.erase(iter);
+			return true;
+		}
+			
+		bool exp = false;
+		if (this->m_suspend < m_grow && m_growing.compare_exchange_strong(exp, true))
+			grow_cv.notify_one();
+	
+		return false;
+	}
+
+	void _init(void) 
+	{
+		super::_init();
+		m_grow_main = std::thread(&thread_pool_ex::_grow, this);
+	}
+
+	void _destory(void)
+	{
+		super::_destory();
+		grow_cv.notify_all();
+		m_grow_main.join();
+	}
+public:
+	inline void set_grow(std::uint8_t grow) { m_grow = grow; }
+	inline size_t size(void) { std::lock_guard<std::mutex> lock(grow_mutex); return this->m_size + m_extra_pool.size(); }
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namspace _impl
 namespace com
@@ -242,9 +319,11 @@ namespace com
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using threadpool = _impl::thread_pool < 0 >;
 using thread = _impl::thread_pool < 1 >;
+using threadpool_ex = _impl::thread_pool_ex<>;
 template<size_t N> using threadpool_st = _impl::thread_pool<N>;
 template<class T> using task_threadpool = _impl::thread_pool < 0, T >;
 template<class T> using task_thread  = _impl::thread_pool < 1, T >;
+template<class T> using task_threadpool_ex = _impl::thread_pool_ex < T >;
 template<size_t N ,class T> using task_threadpool_st  = _impl::thread_pool < N, T >;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namspace com
