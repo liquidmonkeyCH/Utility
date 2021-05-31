@@ -22,6 +22,7 @@
     <ClInclude Include="Utility\application.hpp" />
     <ClInclude Include="Utility\base_defines.hpp" />
     <ClInclude Include="Utility\com_binaryloader.hpp" />
+    <ClInclude Include="Utility\com_sha256.hpp" />
     <ClInclude Include="Utility\com_widgets.hpp" />
     <ClInclude Include="Utility\com_guard.hpp" />
     <ClInclude Include="Utility\com_hex_caster.hpp" />
@@ -80,6 +81,7 @@
   <ItemGroup>
     <ClCompile Include="application.cpp" />
     <ClCompile Include="com_md5.cpp" />
+    <ClCompile Include="com_sha256.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="task_channel.cpp" />
     <ClCompile Include="net_framework.cpp" />

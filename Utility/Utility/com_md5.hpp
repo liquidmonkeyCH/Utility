@@ -7,8 +7,7 @@
 #ifndef __COM_MD5_HPP__
 #define __COM_MD5_HPP__
 
-#include <cstddef>
-#include <cstdint>
+#include "Utility/com_hex_caster.hpp"
 
 namespace Utility
 {
@@ -25,9 +24,10 @@ public:
 	md5(const md5&) = delete;
 	md5& operator=(const md5&) = delete;
 
+	void reset();
 	void update(const void* input, std::size_t length);
-	const char* c_str(void);
-	void reset(); 
+
+	const char* c_str(void) { return _finished ? _result : _impl::bin_to_hex<false>(_result, digest(), 16); }
 private:
 	const unsigned char* digest();
 	void final();
