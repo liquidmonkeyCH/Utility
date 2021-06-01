@@ -92,13 +92,6 @@ void md5::update(const void* input, std::size_t length) {
 	memcpy(&_buffer[index], static_cast<const unsigned char*>(input) + i, length - i);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Return the message-digest
-const unsigned char* md5::digest() {
-	_finished = true;
-	final();
-	return _digest;
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /* md5 finalization. Ends an md5 message-_digest operation, writing the
 the message _digest and zeroizing the context.
 */

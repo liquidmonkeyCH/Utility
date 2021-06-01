@@ -27,13 +27,20 @@ public:
 	void reset();
 	void update(const void* input, std::size_t length);
 
-	const char* c_str(void) { return _finished ? _result : _impl::bin_to_hex<false>(_result, digest(), 16); }
+	const char* c_str(void) { digest(); return _result; }
+	const char* gen_out(void) { digest(); return (char*)_digest; }
 private:
-	const unsigned char* digest();
 	void final();
 	void transform(const unsigned char block[64]);
 	void encode(const std::uint32_t* input, unsigned char* output, std::size_t length);
 	void decode(const unsigned char* input, std::uint32_t* output, std::size_t length);
+
+	void digest(void) {
+		if (_finished) return;
+		_finished = true;
+		final();
+		_impl::bin_to_hex<false>(_result, _digest, 16);
+	}
 private:
 	char _result[32+1];
 	std::uint32_t _state[4]; /* state (ABCD) */

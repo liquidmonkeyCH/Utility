@@ -24,6 +24,7 @@
     <ClInclude Include="Utility\com_base64.hpp" />
     <ClInclude Include="Utility\com_binaryloader.hpp" />
     <ClInclude Include="Utility\com_character.hpp" />
+    <ClInclude Include="Utility\com_endian.hpp" />
     <ClInclude Include="Utility\com_sha256.hpp" />
     <ClInclude Include="Utility\com_widgets.hpp" />
     <ClInclude Include="Utility\com_guard.hpp" />

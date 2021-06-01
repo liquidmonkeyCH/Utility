@@ -10,6 +10,7 @@
 #include <string.h>
 #include <cstdint>
 #include <cstddef>
+#include <cctype>
 
 namespace Utility
 {
@@ -57,12 +58,10 @@ const char* bin_to_hex(char* out, const std::uint8_t* data, size_t size)
 inline
 void hex_to_bin(char* data, const char* hex, size_t len)
 {
-	for (size_t i = 0; i < len; i+=2,++data)
-	{
+	for (size_t i = 0; i < len; i+=2,++data){
 		*data = UTILITY_COM_HEX_TRANS(hex[i]) << 4 | UTILITY_COM_HEX_TRANS(hex[i + 1]);
 	}
 }
-#undef UTILITY_COM_HEX_TRANS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<size_t size,bool hex_header>
 class bin_to_hex_buffer
@@ -117,6 +116,24 @@ bin2hex(const T& data) { return hex_caster<T, hex_header, upper>(data); }
 template<bool hex_header = false, class T>
 void 
 hex2bin(T& data,const char* hex,size_t len) { hex_caster<T, hex_header>(data,hex,len); }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<bool upper = true>
+inline const char* bin_to_hex(const char* src, size_t src_len, char* dst, size_t dst_len,bool hex_header = false){
+	if (hex_header) dst_len -= 2;
+	if (dst_len <= src_len * 2) return nullptr;
+	return _impl::bin_to_hex<upper>(dst, src, src_len);
+}
+
+inline const char* hex_to_bin(const char* src, size_t src_len, char* dst, size_t dst_len, bool hex_header = false){
+	dst_len *= 2;
+	if (hex_header) dst_len += 2;
+	if(dst_len < src_len) return nullptr;
+	for (size_t i = hex_header ? 2:0; i < src_len; i += 2, ++dst) {
+		if (!std::isalnum(src[i])) return nullptr;
+		*dst = UTILITY_COM_HEX_TRANS(src[i]) << 4 | UTILITY_COM_HEX_TRANS(src[i + 1]);
+	}
+}
+#undef UTILITY_COM_HEX_TRANS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace com 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -22,20 +22,40 @@ class sha256
 		0xa54ff53a, 0x510e527f, 0x9b05688c,
 		0x1f83d9ab, 0x5be0cd19
 	};
+	static constexpr std::uint32_t TAIL_SIZE = 128;
+	static constexpr std::uint32_t BLOCK_SIZE = 64;
+	static constexpr std::uint32_t SIZE_SIZE = 8;
+	static constexpr std::uint32_t DEAD_LINE = BLOCK_SIZE - 9;
 public:
-	sha256(const char* data = nullptr);
-	~sha256(void) = default;
+	sha256(void);
+	sha256(const void* data, std::size_t len);
 
-	void reset(const char* data);
-	const char* c_str(void) { return m_finished ? m_result : _impl::bin_to_hex<false>(m_result, digest(), 32); }
+	sha256(const sha256&) = delete;
+	sha256& operator=(const sha256&) = delete;
+
+	void reset(void);
+	void update(const void* input, std::size_t length);
+
+	const char* c_str(void) { digest(); return m_result; }
+	const char* gen_out(void) { digest(); return (char*)m_digest; }
 private:
-	void init(void);
-	void transform(const uint32_t* chunk, size_t blocks);
-	const unsigned char* digest(void);
+	void final(void);
+	void transform(const std::uint32_t* chunk, std::size_t blocks);
+	void digest(void) {
+		if (m_finished) return;
+		m_finished = true;
+		final();
+		_impl::bin_to_hex<false>(m_result, (std::uint8_t*)m_digest, 32);
+	}
 private:
 	bool m_finished = false;
 	const char* m_data = nullptr;
-	size_t m_blocks = 0;
+
+	std::size_t m_pos = 0;
+	char m_tail[TAIL_SIZE];
+	std::size_t m_size = 0;
+	std::uint32_t m_state[8];
+
 	std::uint32_t m_digest[8];
 	char m_result[64 + 1] = {};
 };
