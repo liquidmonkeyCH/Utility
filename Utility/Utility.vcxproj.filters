@@ -178,6 +178,7 @@
       <Filter>Utility\com</Filter>
     </ClInclude>
     <ClInclude Include="Utility\com_base64.hpp">
+    <ClInclude Include="Utility\com_sha256.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
   </ItemGroup>
@@ -242,6 +243,7 @@
       <Filter>Utility\task</Filter>
     </ClCompile>
     <ClCompile Include="com_base64.cpp">
+    <ClCompile Include="com_sha256.cpp">
       <Filter>Utility\com</Filter>
     </ClCompile>
   </ItemGroup>

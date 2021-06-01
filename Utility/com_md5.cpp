@@ -5,9 +5,7 @@
 **/
 
 #include "Utility/com_md5.hpp"
-#include "Utility/com_hex_caster.hpp"
 #include "Utility/logger.hpp"
-#include <string.h>
 
 namespace Utility
 {
@@ -226,10 +224,6 @@ void md5::decode(const unsigned char* input, std::uint32_t* output, std::size_t 
 			(static_cast<std::uint32_t>(input[j + 2]) << 16) | (static_cast<std::uint32_t>(input[j + 3]) << 24);
 	}
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-const char*
-md5::c_str(void)
-{ return _finished ? _result : _impl::bin_to_hex<false>(_result, digest(), 16); }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace com
 ///////////////////////////////////////////////////////////////////////////////////////////////////
