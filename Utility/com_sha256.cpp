@@ -161,7 +161,6 @@ void sha256::final(void) {
     *(std::size_t*)p = endian(m_size * 8);
     tmp = p > m_tail + BLOCK_SIZE ? 2 : 1;
     transform((std::uint32_t*)m_tail, tmp);
-    for (int i = 0; i < 8; ++i) m_digest[i] = endian(m_digest[i]);
 }
 
 void sha256::transform(const std::uint32_t* chunk, size_t blocks) {

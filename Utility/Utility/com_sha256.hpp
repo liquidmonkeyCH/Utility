@@ -8,6 +8,7 @@
 #define __COM_SHA256_HPP__
 
 #include "Utility/com_hex_caster.hpp"
+#include <cstdio>
 
 namespace Utility
 {
@@ -37,7 +38,7 @@ public:
 	void update(const void* input, std::size_t length);
 
 	const char* c_str(void) { digest(); return m_result; }
-	const char* gen_out(void) { digest(); return (char*)m_digest; }
+	const uint32_t* gen_out(void) { digest(); return m_digest; }
 private:
 	void final(void);
 	void transform(const std::uint32_t* chunk, std::size_t blocks);
@@ -45,7 +46,8 @@ private:
 		if (m_finished) return;
 		m_finished = true;
 		final();
-		_impl::bin_to_hex<false>(m_result, (std::uint8_t*)m_digest, 32);
+		sprintf_s(m_result, "%08x%08x%08x%08x%08x%08x%08x%08x", 
+			m_digest[0], m_digest[1], m_digest[2], m_digest[3], m_digest[4], m_digest[5], m_digest[6], m_digest[7]);
 	}
 private:
 	bool m_finished = false;
