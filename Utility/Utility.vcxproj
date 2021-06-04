@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Utility\application.hpp" />
     <ClInclude Include="Utility\base_defines.hpp" />
+    <ClInclude Include="Utility\com_aes.hpp" />
     <ClInclude Include="Utility\com_base64.hpp" />
     <ClInclude Include="Utility\com_binaryloader.hpp" />
     <ClInclude Include="Utility\com_character.hpp" />
@@ -83,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="com_aes.cpp" />
     <ClCompile Include="com_base64.cpp" />
     <ClCompile Include="com_md5.cpp" />
     <ClCompile Include="com_sha256.cpp" />
@@ -152,6 +154,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_debug\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

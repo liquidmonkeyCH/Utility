@@ -20,7 +20,7 @@ inline std::uint32_t endian(const std::uint32_t& data) {
         ((data & 0x000000FF) << 24);
 }
 
-inline std::size_t endian(const std::size_t& data) {
+inline std::uint64_t endian(const std::uint64_t& data) {
     return
         ((data & 0x00000000000000FF) << 56)|
         ((data & 0x000000000000FF00) << 40)|

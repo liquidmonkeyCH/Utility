@@ -281,7 +281,7 @@ class thread_pool_ex : public thread_pool<0, T>
 
 	inline bool _check(bool extra)
 	{
-		if (extra && this->m_suspend > int(m_grow) * 2) {
+		if (extra && this->m_suspend > size_t(m_grow) * 2) {
 			std::lock_guard<std::mutex> lock(grow_mutex);
 			auto iter = m_extra_pool.find(std::this_thread::get_id());
 			iter->second.detach();
