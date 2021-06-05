@@ -38,6 +38,7 @@ public:
 public:
 	void set_iv(const char* iv, size_t size = BLOCK_SIZE);
 	iv_t get_iv(void){ if (m_iv.m_len == 0) gen_iv(); return m_iv; }
+	void set_auth(const char* ptr, size_t len) { m_auth_ptr = ptr; m_auth_len = len; }	// for GCM MODE
 protected:
 	void gen_iv(void);
 	void gen_key(const char* key, uint32_t* w, int Nk, int KeyLen, int KeyExt);
@@ -46,7 +47,9 @@ protected:
 	int do_decrypt(char* out, size_t& out_size, const char* in, size_t in_size, const std::uint32_t* key, mode_t mod, padding_t padding, int Nr);
 protected:
 	iv_t m_iv;
-	std::uint8_t m_end[BLOCK_SIZE];
+	std::uint8_t m_end[BLOCK_SIZE] = {0};
+	const char* m_auth_ptr = nullptr;
+	size_t m_auth_len = 0;
 };
 ////////////////////////////////////////////////////////////////////////////////
 template<size_t Nk, size_t Nr>

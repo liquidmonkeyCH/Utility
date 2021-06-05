@@ -76,8 +76,10 @@ application::get_controler(void)
 bool
 application::Start(int param_num, char* params[])
 {
+	Clog::info("Application starting!");
 	if (!get_controler()->start())
 		return false;
+
 	bool bDaemon = false;
 	for (int i = 0; i < param_num; ++i)
 	{

@@ -380,67 +380,131 @@ inline void cbc_decrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_siz
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////
-// CRT MODE
-inline void add_counter(uint8_t* iv, uint8_t n) {
-	if (*iv != 0xFF) { ++(*iv); return; }
-	*iv = 0;
-	if (n == 0) return;
-	add_counter(--iv, n - 1);
+// CTR MODE
+static constexpr size_t CTR_INC_POS = 12;
+inline void add_counter(std::uint8_t* iv) {
+	if (++(iv += 12)[3] == 0)
+		if (++iv[2] == 0)
+			if (++iv[1] == 0)
+				++iv[0];
 }
 
-inline void ctr_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_size, const std::uint8_t* key, std::uint8_t* iv, int Nr) {
+inline std::uint32_t& endian(std::uint32_t& data) {
+	return data =
+		((data & 0xFF000000) >> 24)|
+		((data & 0x00FF0000) >> 8) |
+		((data & 0x0000FF00) << 8) |
+		((data & 0x000000FF) << 24);
+}
+
+inline void add_counter(std::uint8_t* iv, std::uint32_t i) {
+	std::uint32_t temp;
+	memcpy(&temp, iv + CTR_INC_POS, sizeof(temp));
+	temp = endian(temp) + i;
+	memcpy(iv + CTR_INC_POS, &endian(temp), sizeof(temp));
+}
+
+inline void ctr_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_size, const std::uint8_t* key, const std::uint8_t* iv, int Nr, std::uint8_t* end = nullptr) {
+	std::uint8_t counter[BLOCK_SIZE] = { 0 };
+	memcpy(counter, iv, BLOCK_SIZE);
+
 	while (in_size >= BLOCK_SIZE) {
-		encrypt(out, iv, key, Nr);
+		encrypt(out, counter, key, Nr);
 		Xor((std::uint32_t*)out, (std::uint32_t*)in);
 		in_size -= BLOCK_SIZE;
 		in += BLOCK_SIZE;
 		out += BLOCK_SIZE;
-		add_counter(iv + 15, 15);
+		add_counter(counter);
 	}
 
-	if (in_size > 0) {
-		std::uint8_t temp[BLOCK_SIZE];
-		encrypt(temp, iv, key, Nr);
-		Xor(temp, in, in_size);
-		memcpy(out, temp, in_size);
+	if (in_size > 0 || end) {
+		encrypt(counter, counter, key, Nr);
+		Xor(counter, in, in_size);
+		memcpy(out, counter, in_size);
+		out += in_size;
+	}
+
+	if (end) {
+		Nr = int(BLOCK_SIZE - in_size);
+		Xor(counter + in_size, end + in_size, Nr);
+		memcpy(out, counter + in_size, Nr);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////
 // GCM MODE
-inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_size, const std::uint8_t* key, std::uint8_t* iv, int Nr) {
+static constexpr size_t GCM_IV_SIZE = CTR_INC_POS;
+// Hash subkey is created. H = E(K, 0^128)
+inline void InitialHashSubkey(unsigned char* key_h, const unsigned char* k, int Nr) {
+	memset(key_h, 0, BLOCK_SIZE);		// H variable is set to 0
+	encrypt(key_h, key_h, k, Nr);		// H (all zeros) is encrypted with the Key
+}
+
+inline void InitialCounter(unsigned char* counter, const unsigned char* iv, unsigned char i = 1) {
+	memset(counter, 0, BLOCK_SIZE);
+	memcpy(counter, iv, GCM_IV_SIZE);
+	counter[BLOCK_SIZE - 1] = i;
+}
+
+inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_size, const std::uint8_t* key, std::uint8_t* iv, int Nr, std::uint8_t* end = nullptr, const std::uint8_t* authptr = nullptr, size_t len = 0) {
 	std::uint8_t key_h[BLOCK_SIZE];
-	std::uint8_t mac[BLOCK_SIZE];
-	memset(mac, 0, BLOCK_SIZE);
-	//memcpy(mac, iv, BLOCK_SIZE);
+	std::uint8_t counter[BLOCK_SIZE] = {0};
+	std::uint8_t mac[BLOCK_SIZE] = {0};
 
-	encrypt(key_h, iv, key, Nr);
-	add_counter(iv + 15, 15);
-	GMac(mac, key_h);
+	InitialHashSubkey(key_h, key, Nr);
+	memset(out, 0, BLOCK_SIZE);
+	if (authptr) {
+		while (len >= BLOCK_SIZE) {
+			Xor(out, authptr, BLOCK_SIZE);
+			GMac(out, key_h);
+			len -= BLOCK_SIZE;
+			authptr += BLOCK_SIZE;
+		}
 
+		if (len) {
+			memcpy(mac, authptr, len);
+			Xor(out, mac, BLOCK_SIZE);
+			GMac(out, key_h);
+		}
+
+		memcpy(mac, out, BLOCK_SIZE);
+	}
+
+	InitialCounter(counter, iv, 2);
 	while (in_size >= BLOCK_SIZE) {
-		encrypt(out, iv, key, Nr);
+		encrypt(out, counter, key, Nr);
 		Xor((std::uint32_t*)out, (std::uint32_t*)in);
+
+		Xor(mac, out, BLOCK_SIZE);
 		GMac(mac, key_h);
-		Xor((std::uint32_t*)mac, (std::uint32_t*)out);
 
 		in_size -= BLOCK_SIZE;
 		in += BLOCK_SIZE;
 		out += BLOCK_SIZE;
-		add_counter(iv + 15, 15);
+		add_counter(counter);
 	}
 
-	if (in_size > 0) {
-		std::uint8_t temp[BLOCK_SIZE];
-		encrypt(temp, iv, key, Nr);
-		Xor(temp, in, in_size);
-		memcpy(out, temp, in_size);
+	if (in_size > 0 || end) {
+		encrypt(counter, counter, key, Nr);
+		Xor(counter, in, in_size);
+		memcpy(out, counter, in_size);
+		out += in_size;
 
-		GMac(mac, key_h);
-		Xor(mac, out, in_size);
+		Xor(mac, counter, in_size);
+	}
+
+	if (end) {
+		Nr = int(BLOCK_SIZE - in_size);
+		Xor(counter + in_size, end + in_size, Nr);
+		memcpy(out, counter + in_size, Nr);
+		out += Nr;
+
+		Xor(mac + in_size, counter + in_size, Nr);
 	}
 
 	GMac(mac, key_h);
-	Xor((std::uint32_t*)mac, (std::uint32_t*)key_h);
+	InitialCounter(counter, iv);
+	encrypt(out, counter, key, Nr);
+	Xor((std::uint32_t*)out, (std::uint32_t*)mac);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void aes_base::set_iv(const char* iv, size_t size) {
@@ -460,19 +524,19 @@ void aes_base::gen_key(const char* key, std::uint32_t* w, int Nk, int KeyLen, in
 }
 
 int aes_base::check_param(size_t& out_size, size_t& in_size, mode_t mode, padding_t& padding) {
-	if (mode == mode_t::CTR ) {
-		if (out_size < in_size) return Overflow;
-		out_size = in_size;
-		return Success;
-	}
-
-	if (mode == mode_t::GCM) {
-		if (out_size < in_size + BLOCK_SIZE + m_iv.m_len) return Overflow;
-		out_size = in_size + BLOCK_SIZE + m_iv.m_len;
-		return Success;
-	}
-
 	if (padding == padding_t::None) {
+		if(mode == mode_t::CTR) {
+			if (out_size < in_size) return Overflow;
+			out_size = in_size;
+			return Success;
+		}
+
+		if (mode == mode_t::GCM) {
+			if (out_size < in_size + BLOCK_SIZE) return Overflow;
+			out_size = in_size + BLOCK_SIZE;
+			return Success;
+		}
+
 		if (in_size & SIZE_MASK) return NeedPadding;
 		if (out_size < in_size) return Overflow;
 	}
@@ -517,11 +581,11 @@ int aes_base::do_encrypt(char* out, size_t& out_size, const char* in, size_t in_
 		cbc_encrypt((std::uint8_t*)out, (std::uint8_t*)in, in_size, (std::uint8_t*)key, (std::uint8_t*)m_iv.m_data, Nr, padding == padding_t::None ? nullptr : m_end);
 		break;
 	case Utility::_impl::aes_base::mode_t::CTR:
-		ctr_encrypt((std::uint8_t*)out, (std::uint8_t*)in, in_size, (std::uint8_t*)key, (std::uint8_t*)m_iv.m_data, Nr);
+		ctr_encrypt((std::uint8_t*)out, (std::uint8_t*)in, in_size, (std::uint8_t*)key, (std::uint8_t*)m_iv.m_data, Nr, padding == padding_t::None ? nullptr : m_end);
 		break;
 	case Utility::_impl::aes_base::mode_t::GCM:
-		memcpy(out, m_iv.m_data, m_iv.m_len);
-		gcm_encrypt((std::uint8_t*)out + m_iv.m_len, (std::uint8_t*)in, in_size, (std::uint8_t*)key, (std::uint8_t*)m_iv.m_data, Nr);
+		m_iv.m_len = GCM_IV_SIZE;
+		gcm_encrypt((std::uint8_t*)out, (std::uint8_t*)in, in_size, (std::uint8_t*)key, (std::uint8_t*)m_iv.m_data, Nr, padding == padding_t::None ? nullptr : m_end, (std::uint8_t*)m_auth_ptr, m_auth_len);
 		break;
 	case Utility::_impl::aes_base::mode_t::CFB:
 	case Utility::_impl::aes_base::mode_t::OFB:
