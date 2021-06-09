@@ -38,8 +38,8 @@ public:
 	base64(const char sign[2] = nullptr,char padding = '=');
 	~base64(void) = default;
 
-	size_t encoding(const char* src, char* dst, size_t size, bool padding = true);
-	size_t decoding(const char* src, char* dst, size_t size);
+	size_t encoding(const char* src, size_t src_size, char* dst, size_t dst_size, bool padding = true);
+	size_t decoding(const char* src, size_t src_size, char* dst, size_t dst_size);
 };
 ////////////////////////////////////////////////////////////////////////////////
 }// namespace com 

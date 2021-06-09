@@ -20,7 +20,7 @@ inline std::uint32_t endian(const std::uint32_t& data) {
         ((data & 0x000000FF) << 24);
 }
 
-inline std::uint64_t endian(const std::uint64_t& data) {
+inline std::uint64_t endian(const std::uint64_t data) {
     return
         ((data & 0x00000000000000FF) << 56)|
         ((data & 0x000000000000FF00) << 40)|
@@ -136,6 +136,7 @@ void sha256::update(const void* input, std::size_t length) {
 
         memcpy(m_tail + m_pos, input, tmp);
         transform((std::uint32_t*)m_tail, 1);
+        memset(m_tail, 0, BLOCK_SIZE);
         m_pos = 0;
         m_size += tmp;
         length -= tmp;
@@ -158,36 +159,22 @@ void sha256::final(void) {
         memset(++p, 0, tmp);
         p += tmp;
     }
-    *(std::size_t*)p = endian(m_size * 8);
+    *(std::uint64_t*)p = endian(std::uint64_t(m_size * 8));
     tmp = p > m_tail + BLOCK_SIZE ? 2 : 1;
     transform((std::uint32_t*)m_tail, tmp);
 }
 
 void sha256::transform(const std::uint32_t* chunk, size_t blocks) {
-    std::uint32_t a = m_digest[0], b = m_digest[1], c = m_digest[2], d = m_digest[3],
-                  e = m_digest[4], f = m_digest[5], g = m_digest[6], h = m_digest[7];
-    std::uint32_t w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, t;
+    std::uint32_t *A = m_digest + 0, *B = m_digest + 1, *C = m_digest + 2, *D = m_digest + 3, 
+                  *E = m_digest + 4, *F = m_digest + 5, *G = m_digest + 6, *H = m_digest + 7;
+    std::uint32_t w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15,
+                  t, a, b, c, d, e, f, g, h;
     while (blocks--) {
+        a = *A, b = *B, c = *C, d = *D, e = *E, f = *F, g = *G, h = *H;
         ROUND(a, b, c, d, e, f, g, h, chunk, w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, t)
-        a += m_digest[0];
-        b += m_digest[1];
-        c += m_digest[2];
-        d += m_digest[3];
-        e += m_digest[4];
-        f += m_digest[5];
-        g += m_digest[6];
-        h += m_digest[7];
+        (*A) += a,(*B) += b,(*C) += c,(*D) += d, (*E) += e, (*F) += f, (*G) += g, (*H) += h;
         chunk += 16;
     }
-
-    m_digest[0] = a;
-    m_digest[1] = b;
-    m_digest[2] = c;
-    m_digest[3] = d;
-    m_digest[4] = e;
-    m_digest[5] = f;
-    m_digest[6] = g;
-    m_digest[7] = h;
 }
 ////////////////////////////////////////////////////////////////////////////////
 } //!namespace com

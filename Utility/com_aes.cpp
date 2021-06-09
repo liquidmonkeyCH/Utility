@@ -262,6 +262,13 @@ inline void Det(std::uint8_t* dst, const std::uint8_t* src) {
 inline void Xor(std::uint32_t* mtx, std::uint32_t* key) { for (int i = 0; i < 4; ++i) *mtx++ ^= *key++; }
 inline void Xor(std::uint8_t* mtx, const std::uint8_t* key, size_t n) { for (int i = 0; i < n; ++i) *mtx++ ^= *key++; }
 inline void GMac(std::uint8_t* mtx, const std::uint8_t* key, size_t n = 16){ for (int i = 0; i < n; ++i,++mtx) *mtx = GFMul(*mtx,*key++); }
+inline void GMul128(std::uint8_t* mtx, const std::uint8_t* key) {
+
+
+
+}
+
+
 /**
  *  按字节 循环左移一位
  *  即把[a0, a1, a2, a3]变成[a1, a2, a3, a0]
@@ -445,17 +452,80 @@ inline void InitialCounter(unsigned char* counter, const unsigned char* iv, unsi
 	counter[BLOCK_SIZE - 1] = i;
 }
 
+static unsigned char R[BLOCK_SIZE] = { 0xe1 };
+static void ShiftRight(unsigned char* SHFT) {
+
+	unsigned char prevcarry = 0x00;			// Carry of the previous position
+	unsigned char currcarry = 0x00;			// Carry of the current position
+
+	for (int i = 0; i < BLOCK_SIZE; i++)			// From 0 to 15 to iterate through the whole 16 bytes
+	{
+		prevcarry = currcarry;				// Previous carry is equal to the new carry
+
+		if (SHFT[i] & 0x01)					// If the LSB of the byte is 1, we carry
+			currcarry = 0x80;
+		else
+			currcarry = 0x00;				// Else the carry is 0
+
+		SHFT[i] >>= 0x01;					// We shift the byte to the right by 1 position
+		SHFT[i] += prevcarry;				// And we add the previous carry to the byte
+	}
+
+	/*
+	printf("%s\n", "Shift: ");
+	PrintVector(V, Block);*/
+}
+static void GFMult128(unsigned char* V, const unsigned char* X) {
+	unsigned char Z[BLOCK_SIZE] = { 0 };
+	memset(Z, 0, BLOCK_SIZE);
+
+	for (int i = 0; i < BLOCK_SIZE; i++)						// Iterate through the whole 128 bits on the array (16 bytes)
+	{
+		for (int j = 0; j < BLOCK_SIZE / 2; j++)				// From i = 0 to 16 and j = 0 to 8
+		{
+			if (X[i] & (1 << (7-j)))
+			{													// Obtain the bit i from X, if it's different than 0
+				Xor((std::uint32_t*)Z, (std::uint32_t*)V);							// Z and V are XORed
+			}
+
+			if (V[15] & 0x01)									// Test the LSB of V, if is 1
+			{
+				ShiftRight(V);									// The block is shifted to the right
+				V[0] ^= R[0];									// V is XORed with the R constant previously defined R = 11100001 || 0^120
+			}
+			else
+			{
+				ShiftRight(V);					// Shift V withouth XORing
+			}
+		}
+	}
+	memcpy(V, Z, BLOCK_SIZE);
+}
+
+inline std::uint64_t& endian(std::uint64_t& data) {
+	return data = 
+		((data & 0x00000000000000FF) << 56) |
+		((data & 0x000000000000FF00) << 40) |
+		((data & 0x0000000000FF0000) << 24) |
+		((data & 0x00000000FF000000) << 8) |
+		((data & 0x000000FF00000000) >> 8) |
+		((data & 0x0000FF0000000000) >> 24) |
+		((data & 0x00FF000000000000) >> 40) |
+		((data & 0xFF00000000000000) >> 56);
+}
+
 inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_size, const std::uint8_t* key, std::uint8_t* iv, int Nr, std::uint8_t* end = nullptr, const std::uint8_t* authptr = nullptr, size_t len = 0) {
 	std::uint8_t key_h[BLOCK_SIZE];
 	std::uint8_t counter[BLOCK_SIZE] = {0};
 	std::uint8_t mac[BLOCK_SIZE] = {0};
+	std::uint64_t bit_len = in_size * 8;
 
 	InitialHashSubkey(key_h, key, Nr);
 	memset(out, 0, BLOCK_SIZE);
 	if (authptr) {
 		while (len >= BLOCK_SIZE) {
 			Xor(out, authptr, BLOCK_SIZE);
-			GMac(out, key_h);
+			GFMult128(out, key_h);
 			len -= BLOCK_SIZE;
 			authptr += BLOCK_SIZE;
 		}
@@ -463,7 +533,7 @@ inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_siz
 		if (len) {
 			memcpy(mac, authptr, len);
 			Xor(out, mac, BLOCK_SIZE);
-			GMac(out, key_h);
+			GFMult128(out, key_h);
 		}
 
 		memcpy(mac, out, BLOCK_SIZE);
@@ -475,7 +545,7 @@ inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_siz
 		Xor((std::uint32_t*)out, (std::uint32_t*)in);
 
 		Xor(mac, out, BLOCK_SIZE);
-		GMac(mac, key_h);
+		GFMult128(mac, key_h);
 
 		in_size -= BLOCK_SIZE;
 		in += BLOCK_SIZE;
@@ -490,18 +560,25 @@ inline void gcm_encrypt(std::uint8_t* out, const std::uint8_t* in, size_t in_siz
 		out += in_size;
 
 		Xor(mac, counter, in_size);
+
+		if (end) {
+			size_t left = BLOCK_SIZE - in_size;
+			Xor(counter + in_size, end + in_size, left);
+			memcpy(out, counter + in_size, left);
+			out += left;
+
+			Xor(mac + in_size, counter + in_size, left);
+		}
+
+		GFMult128(mac, key_h);
 	}
+	memcpy(counter + 8, &endian(bit_len), 8);
+	bit_len = len * 8;
+	memcpy(counter, &endian(bit_len), 8);
 
-	if (end) {
-		Nr = int(BLOCK_SIZE - in_size);
-		Xor(counter + in_size, end + in_size, Nr);
-		memcpy(out, counter + in_size, Nr);
-		out += Nr;
+	Xor(mac, counter, BLOCK_SIZE);
+	GFMult128(mac, key_h);
 
-		Xor(mac + in_size, counter + in_size, Nr);
-	}
-
-	GMac(mac, key_h);
 	InitialCounter(counter, iv);
 	encrypt(out, counter, key, Nr);
 	Xor((std::uint32_t*)out, (std::uint32_t*)mac);
@@ -515,7 +592,7 @@ void aes_base::set_iv(const char* iv, size_t size) {
 
 void aes_base::gen_iv(void) {
 	memset(m_iv, 0, sizeof(m_iv));
-	int iv[BLOCK_WORD] = { com::rand(),com::rand(),com::rand() & 0xFF, 0 };
+	int iv[BLOCK_WORD] = { com::rand(),com::rand(),com::rand(), 0 };
 	memcpy(m_iv.m_data, iv, BLOCK_WORD);
 }
 
@@ -545,6 +622,7 @@ int aes_base::check_param(size_t& out_size, size_t& in_size, mode_t mode, paddin
 	unsigned char need = BLOCK_SIZE - left;
 	if (out_size < in_size + need) return Overflow;
 	out_size = in_size + need;
+	if (mode == mode_t::GCM) out_size += BLOCK_SIZE;
 
 	switch (padding)
 	{

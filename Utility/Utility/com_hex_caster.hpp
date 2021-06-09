@@ -94,8 +94,8 @@ template<class T, bool hex_header = false, bool upper = true>
 struct hex_caster : public _impl::bin_to_hex_buffer<sizeof(T), hex_header>
 {
 	// bin -> hex
-	hex_caster(const T& data) 
-	{ _impl::bin_to_hex<upper>(this->m_head, (const std::uint8_t*)&data, sizeof(T)); }
+	hex_caster(const T& data,size_t size = sizeof(T)) 
+	{ _impl::bin_to_hex<upper>(this->m_head, (const std::uint8_t*)&data, size); }
 	// hex -> bin
 	hex_caster(T& data,const char* hex,size_t len) 
 	{ 
@@ -111,7 +111,7 @@ struct hex_caster : public _impl::bin_to_hex_buffer<sizeof(T), hex_header>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool hex_header = false, bool upper = true, class T>
 hex_caster<T, hex_header, upper> 
-bin2hex(const T& data) { return hex_caster<T, hex_header, upper>(data); }
+bin2hex(const T& data,size_t size = sizeof(T)) { return hex_caster<T, hex_header, upper>(data,size); }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool hex_header = false, class T>
 void 

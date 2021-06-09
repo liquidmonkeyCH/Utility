@@ -21,32 +21,30 @@ base64::base64(const char sign[2], char padding):padding_char(padding){
 		chara[63] = '/';
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-size_t base64::encoding(const char* src, char* dst, size_t size, bool padding) {
-	size_t len = strlen(src);
-	if (len == -1) return -1;
+size_t base64::encoding(const char* src, size_t src_size, char* dst, size_t dst_size, bool padding) {
 	unsigned char pos = 0; // 索引是8位，但是高两位都为0
-	pos = len % 3;
+	pos = src_size % 3;
 	if (pos == 0) {
-		if (len / 3 * 4 > size)
+		if (src_size / 3 * 4 > dst_size)
 			return -1;
 	}
 	else {
 		pos = padding ? 4 : pos + 1;
-		if (len / 3 * 4 + pos > size)
+		if (src_size / 3 * 4 + pos > dst_size)
 			return -1;
 	}
 
-	memset(dst, 0, size);
+	memset(dst, 0, dst_size);
 	
 	int i = 0, j = 0;
-	while(i < len) {
+	while(i < src_size) {
 		// 每三个一组，进行编码
 		// 要编码的数字的第一个
 		pos = ((src[i] >> 2) & 0x3f);
 		dst[j++] = chara[pos];
 		// 第二个
 		pos = ((src[i] << 4) & 0x30);
-		if (++i < len) {
+		if (++i < src_size) {
 			pos |= ((src[i] >> 4) & 0x0f);
 			dst[j++] = chara[pos];
 		}
@@ -60,7 +58,7 @@ size_t base64::encoding(const char* src, char* dst, size_t size, bool padding) {
 		}
 		// 第三个
 		pos = ((src[i] << 2) & 0x3c);
-		if (++i < len) { // 有的话需要编码2个
+		if (++i < src_size) { // 有的话需要编码2个
 			pos |= ((src[i] >> 6) & 0x03);
 			dst[j++] = chara[pos];
 
@@ -79,19 +77,17 @@ size_t base64::encoding(const char* src, char* dst, size_t size, bool padding) {
 	return j;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-size_t base64::decoding(const char* src, char* dst, size_t size) {
-	size_t len = strlen(src);
-	if (len == -1) return -1;
+size_t base64::decoding(const char* src, size_t src_size, char* dst, size_t dst_size) {
 	int x, y;
-	x = (len & 0x3);
+	x = (src_size & 0x3);
 	if (x > 0 && x < 2) return -1;
-	if ((len >> 2) * 3 + x - 1 > size)
+	if ((src_size >> 2) * 3 + x - 1 > dst_size)
 		return -1;
 
-	memset(dst, 0, size);
+	memset(dst, 0, dst_size);
 	
 	int i = 0, j = 0;
-	while (i < len && src[i] != padding_char) {
+	while (i < src_size && src[i] != padding_char) {
 		x = find(src[i++]);
 		if (x < 0) 
 			return -1;
@@ -101,7 +97,7 @@ size_t base64::decoding(const char* src, char* dst, size_t size) {
 			return -1;
 
 		dst[j++] = ((x << 2) & 0xfc) | ((y >> 4) & 0x03);
-		if (i >= len || src[i] == padding_char)
+		if (i >= src_size || src[i] == padding_char)
 			return (y & 0x0f) ? -1 : j;
 			
 		x = find(src[i++]);
@@ -109,7 +105,7 @@ size_t base64::decoding(const char* src, char* dst, size_t size) {
 			return -1;
 			
 		dst[j++] = ((x >> 2) & 0x0f) | ((y <<4) & 0xf0);
-		if (i >= len || src[i] == padding_char)
+		if (i >= src_size || src[i] == padding_char)
 			return (x & 0x03) ? -1 : j;
 
 		y = find(src[i++]);
