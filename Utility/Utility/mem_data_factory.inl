@@ -401,7 +401,7 @@ data_pool<T, N, G, Cache>::npos(T* p, size_t& n)->size_type
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N, std::uint64_t G, size_t Cache>
 inline T*
-data_pool<T, N, G, Cache>::malloc(void)
+data_pool<T, N, G, Cache>::_malloc(void)
 {
 	T* p = m_main_trunk.malloc();
 	if (p) return p;
@@ -431,7 +431,7 @@ data_pool<T, N, G, Cache>::malloc(void)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N, std::uint64_t G, size_t Cache>
 inline bool
-data_pool<T, N, G, Cache>::free(T* p)
+data_pool<T, N, G, Cache>::_free(T* p)
 {
 	if (m_main_trunk._free(p))
 		return true;

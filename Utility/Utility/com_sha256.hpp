@@ -46,7 +46,7 @@ private:
 		if (m_finished) return;
 		m_finished = true;
 		final();
-		sprintf_s(m_result, "%08x%08x%08x%08x%08x%08x%08x%08x", 
+		snprintf(m_result, 65, "%08x%08x%08x%08x%08x%08x%08x%08x",
 			m_digest[0], m_digest[1], m_digest[2], m_digest[3], m_digest[4], m_digest[5], m_digest[6], m_digest[7]);
 	}
 private:

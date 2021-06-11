@@ -118,20 +118,23 @@ void
 hex2bin(T& data,const char* hex,size_t len) { hex_caster<T, hex_header>(data,hex,len); }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool upper = true>
-inline const char* bin_to_hex(const char* src, size_t src_len, char* dst, size_t dst_len,bool hex_header = false){
+inline const char* bin_to_hex(const char* src, size_t src_len, char* dst, size_t dst_len, bool hex_header = false){
 	if (hex_header) dst_len -= 2;
 	if (dst_len <= src_len * 2) return nullptr;
-	return _impl::bin_to_hex<upper>(dst, src, src_len);
+	return _impl::bin_to_hex<upper>(dst, (std::uint8_t*)src, src_len);
 }
 
-inline const char* hex_to_bin(const char* src, size_t src_len, char* dst, size_t dst_len, bool hex_header = false){
-	dst_len *= 2;
-	if (hex_header) dst_len += 2;
-	if(dst_len < src_len) return nullptr;
-	for (size_t i = hex_header ? 2:0; i < src_len; i += 2, ++dst) {
-		if (!std::isalnum(src[i])) return nullptr;
-		*dst = UTILITY_COM_HEX_TRANS(src[i]) << 4 | UTILITY_COM_HEX_TRANS(src[i + 1]);
+inline const char* hex_to_bin(const char* src, char* dst, size_t dst_len, bool hex_header = false){
+	size_t src_len = strlen(src);
+	if (hex_header) {
+		src_len -= 2;
+		src += 2;
 	}
+	memset(dst, 0, dst_len);
+	dst_len *= 2;
+	src_len = src_len > dst_len ? dst_len : src_len;
+	_impl::hex_to_bin(dst, src, src_len);
+	return dst;
 }
 #undef UTILITY_COM_HEX_TRANS
 ///////////////////////////////////////////////////////////////////////////////////////////////////

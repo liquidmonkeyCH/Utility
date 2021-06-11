@@ -45,9 +45,11 @@
     <ClInclude Include="Utility\db_hiredis.hpp" />
     <ClInclude Include="Utility\db_mysqlpp.hpp" />
     <ClInclude Include="Utility\logger.hpp" />
+    <ClInclude Include="Utility\logsystem.hpp" />
     <ClInclude Include="Utility\mem_buffer.hpp" />
     <ClInclude Include="Utility\mem_data_factory.hpp" />
     <ClInclude Include="Utility\mem_message.hpp" />
+    <ClInclude Include="Utility\mem_recorder.hpp" />
     <ClInclude Include="Utility\mem_rotative_buffer.hpp" />
     <ClInclude Include="Utility\mem_stream.hpp" />
     <ClInclude Include="Utility\mem_stream_buffer.hpp" />

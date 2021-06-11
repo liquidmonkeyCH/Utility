@@ -5,6 +5,7 @@
 **/
 
 #include "Utility/com_base64.hpp"
+#include <cstring>
 
 namespace Utility
 {
@@ -36,7 +37,7 @@ size_t base64::encoding(const char* src, size_t src_size, char* dst, size_t dst_
 
 	memset(dst, 0, dst_size);
 	
-	int i = 0, j = 0;
+	size_t i = 0, j = 0;
 	while(i < src_size) {
 		// 每三个一组，进行编码
 		// 要编码的数字的第一个
@@ -86,7 +87,7 @@ size_t base64::decoding(const char* src, size_t src_size, char* dst, size_t dst_
 
 	memset(dst, 0, dst_size);
 	
-	int i = 0, j = 0;
+	size_t i = 0, j = 0;
 	while (i < src_size && src[i] != padding_char) {
 		x = find(src[i++]);
 		if (x < 0) 

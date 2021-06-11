@@ -189,6 +189,12 @@
     <ClInclude Include="Utility\com_aes.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\mem_recorder.hpp">
+      <Filter>Utility\mem</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\logsystem.hpp">
+      <Filter>Utility\main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utility\mem_data_factory.inl">

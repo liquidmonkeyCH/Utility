@@ -66,20 +66,20 @@ public:
 	};
 	friend class iterator;
 public:
-	T* malloc(void);
-	bool free(T* p);
+	inline T* malloc(void);
+	inline bool free(T* p);
 
-	iterator used_begin(void);
-	iterator used_end(void);
+	inline iterator used_begin(void);
+	inline iterator used_end(void);
 
-	size_type size(void) { return m_size; }
-	size_type left(void) { return m_left; }
-	size_type used(void) { return m_size - m_left; }
+	inline size_type size(void) { return m_size; }
+	inline size_type left(void) { return m_left; }
+	inline size_type used(void) { return m_size - m_left; }
 protected:
-	size_type npos(T* p);
-	bool _free(T* p,bool force = true);
-	size_type head_zero(void);
-	T* head_data(void) { return m_data; }
+	inline size_type npos(T* p);
+	inline bool _free(T* p,bool force = true);
+	inline size_type head_zero(void);
+	inline T* head_data(void) { return m_data; }
 protected:
 	T*			m_data;
 	size_type*	m_offset;
@@ -94,8 +94,8 @@ public:
 
 	allocator(void) { m_head = m_cache + Cache; m_tail = m_head; }
 
-	Factory* malloc(size_type size);
-	void free(Factory* p);
+	inline Factory* malloc(size_type size);
+	inline void free(Factory* p);
 private:
 	std::mutex	m_mutex;
 	Factory* m_cache[Cache];
@@ -109,8 +109,8 @@ class allocator<Factory, mem::factory_cache_type::NO_CACHE>
 public:
 	using size_type = typename Factory::size_type;
 
-	Factory* malloc(size_type size);
-	void free(Factory* p);
+	inline Factory* malloc(size_type size);
+	inline void free(Factory* p);
 };
 
 template<class Factory>
@@ -120,9 +120,9 @@ public:
 	using size_type = typename Factory::size_type;
 	allocator(void) = default;
 
-	void set_cache(size_t size) { m_size = size; }
-	Factory* malloc(size_type size);
-	void free(Factory* p);
+	inline void set_cache(size_t size) { m_size = size; }
+	inline Factory* malloc(size_type size);
+	inline void free(Factory* p);
 private:
 	std::mutex				m_mutex;
 	std::queue<Factory*>	m_cache;
@@ -180,6 +180,11 @@ public:
 		std::lock_guard<std::mutex> lock(m_mutex);
 		this->m_factory.clear();
 	}
+
+	inline size_t used(void) {
+		std::lock_guard<std::mutex> lock(m_mutex);
+		return this->m_factory.used();
+	}
 private:
 	std::mutex m_mutex;
 	Factory m_factory;
@@ -213,8 +218,8 @@ public:
 	data_factory(const data_factory&&) = delete;
 	data_factory& operator=(const data_factory&&) = delete;
 
-	void init(size_t size = 0) { (void)size; clear(); }
-	void clear(void);
+	inline void init(size_t size = 0) { (void)size; clear(); }
+	inline void clear(void);
 };
 
 template<class T>
@@ -234,8 +239,8 @@ public:
 	data_factory(const data_factory&&) = delete;
 	data_factory<T, 0>& operator=(const data_factory&&) = delete;
 
-	void init(size_t size);
-	void clear(void);
+	inline void init(size_t size);
+	inline void clear(void);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N = 0, std::uint64_t G = N, size_t Cache = factory_cache_type::DYNAMIC>
@@ -257,8 +262,9 @@ private:
 	size_t		m_dealloc_chunk;
 	size_type	m_grow;
 	main_t		m_main_trunk;
+	size_t		m_used = 0;
 private:
-	auto npos(T* p, size_t& n)->size_type;
+	inline auto npos(T* p, size_t& n)->size_type;
 public:
 	data_pool(void);
 	~data_pool(void);
@@ -269,11 +275,16 @@ public:
 	data_pool(const data_pool&&) = delete;
 	data_pool& operator=(const data_pool&&) = delete;
 
-	void init(size_t size = 0, size_t grow = 0);
-	void clear(void);
+	inline void init(size_t size = 0, size_t grow = 0);
+	inline void clear(void);
 
-	T* malloc(void);
-	bool free(T* p);
+	inline T* malloc(void) { T* p = _malloc(); if (p) ++m_used; return p; }
+	inline bool free(T* p) { bool r = _free(p); if (r) --m_used; return r; }
+
+	inline size_t used(void) { return m_used; }
+protected:
+	inline T* _malloc(void);
+	inline bool _free(T* p);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T, std::uint64_t N = 0, std::uint64_t G = N, size_t Cache = factory_cache_type::DYNAMIC>

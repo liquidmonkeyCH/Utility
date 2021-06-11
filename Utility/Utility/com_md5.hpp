@@ -39,7 +39,7 @@ private:
 		if (_finished) return;
 		_finished = true;
 		final();
-		_impl::bin_to_hex<false>(_result, _digest, 16);
+		bin_to_hex<false>((char*)_digest, 16, _result, 33);
 	}
 private:
 	char _result[32+1];

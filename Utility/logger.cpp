@@ -65,7 +65,7 @@ logger::debug(const char* msg)
 {
 	if (m_level < log_level::debug) return;
 	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << green << "DEBUG" << normal << "] " << msg << std::endl;
+	std::cout << "[" << green << "DBUG" << normal << "] " << msg << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void
@@ -89,7 +89,7 @@ logger::error(const char* msg)
 {
 	if (m_level < log_level::error) return;
 	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << red << "ERROR" << normal << "] " << msg << std::endl;
+	std::cout << "[" << red << "ERRO" << normal << "] " << msg << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace Utility

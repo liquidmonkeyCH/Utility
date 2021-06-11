@@ -206,15 +206,21 @@ inline void SubBytes(std::uint32_t* mtx) { for (int i = 0; i < 4; ++i, ++mtx) *m
 inline void InvSubBytes(std::uint32_t* mtx) { for (int i = 0; i < 4; ++i, ++mtx) *mtx = SUB_WORD(Inv_S_Box, *mtx); }
 
 inline void ShiftRows(std::uint32_t* mtx) {
-	*++mtx = (*mtx >> 8) | (*mtx << 24);
-	*++mtx = (*mtx >> 16) | (*mtx << 16);
-	*++mtx = (*mtx >> 24) | (*mtx << 8);
+	++mtx;
+	*mtx = (*mtx >> 8) | (*mtx << 24);
+	++mtx;
+	*mtx = (*mtx >> 16) | (*mtx << 16);
+	++mtx;
+	*mtx = (*mtx >> 24) | (*mtx << 8);
 }
 
 inline void InvShiftRows(std::uint32_t* mtx) {
-	*++mtx = (*mtx << 8) | (*mtx >> 24);
-	*++mtx = (*mtx << 16) | (*mtx >> 16);
-	*++mtx = (*mtx << 24) | (*mtx >> 8);
+	++mtx;
+	*mtx = (*mtx << 8) | (*mtx >> 24);
+	++mtx;
+	*mtx = (*mtx << 16) | (*mtx >> 16);
+	++mtx;
+	*mtx = (*mtx << 24) | (*mtx >> 8);
 }
 
 inline void MixColumns(std::uint8_t* mtx) {
@@ -260,8 +266,8 @@ inline void Det(std::uint8_t* dst, const std::uint8_t* src) {
 }
 
 inline void Xor(std::uint32_t* mtx, std::uint32_t* key) { for (int i = 0; i < 4; ++i) *mtx++ ^= *key++; }
-inline void Xor(std::uint8_t* mtx, const std::uint8_t* key, size_t n) { for (int i = 0; i < n; ++i) *mtx++ ^= *key++; }
-inline void GMac(std::uint8_t* mtx, const std::uint8_t* key, size_t n = 16){ for (int i = 0; i < n; ++i,++mtx) *mtx = GFMul(*mtx,*key++); }
+inline void Xor(std::uint8_t* mtx, const std::uint8_t* key, size_t n) { for (size_t i = 0; i < n; ++i) *mtx++ ^= *key++; }
+inline void GMac(std::uint8_t* mtx, const std::uint8_t* key, size_t n = 16){ for (size_t i = 0; i < n; ++i,++mtx) *mtx = GFMul(*mtx,*key++); }
 inline void GMul128(std::uint8_t* mtx, const std::uint8_t* key) {
 
 
@@ -458,7 +464,7 @@ static void ShiftRight(unsigned char* SHFT) {
 	unsigned char prevcarry = 0x00;			// Carry of the previous position
 	unsigned char currcarry = 0x00;			// Carry of the current position
 
-	for (int i = 0; i < BLOCK_SIZE; i++)			// From 0 to 15 to iterate through the whole 16 bytes
+	for (size_t i = 0; i < BLOCK_SIZE; i++)			// From 0 to 15 to iterate through the whole 16 bytes
 	{
 		prevcarry = currcarry;				// Previous carry is equal to the new carry
 
@@ -479,9 +485,9 @@ static void GFMult128(unsigned char* V, const unsigned char* X) {
 	unsigned char Z[BLOCK_SIZE] = { 0 };
 	memset(Z, 0, BLOCK_SIZE);
 
-	for (int i = 0; i < BLOCK_SIZE; i++)						// Iterate through the whole 128 bits on the array (16 bytes)
+	for (size_t i = 0; i < BLOCK_SIZE; i++)						// Iterate through the whole 128 bits on the array (16 bytes)
 	{
-		for (int j = 0; j < BLOCK_SIZE / 2; j++)				// From i = 0 to 16 and j = 0 to 8
+		for (size_t j = 0; j < BLOCK_SIZE / 2; j++)				// From i = 0 to 16 and j = 0 to 8
 		{
 			if (X[i] & (1 << (7-j)))
 			{													// Obtain the bit i from X, if it's different than 0
@@ -637,7 +643,7 @@ int aes_base::check_param(size_t& out_size, size_t& in_size, mode_t mode, paddin
 		m_end[aes_base::SIZE_MASK] = need;
 		break;
 	case Utility::_impl::aes_base::padding_t::iso10126:
-		for (int i = left; i < aes_base::SIZE_MASK; ++i) m_end[i] = com::rand() & 0xFF;
+		for (size_t i = left; i < aes_base::SIZE_MASK; ++i) m_end[i] = com::rand() & 0xFF;
 		m_end[aes_base::SIZE_MASK] = need;
 		break;
 	default:
