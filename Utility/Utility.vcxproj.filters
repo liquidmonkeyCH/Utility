@@ -198,6 +198,9 @@
     <ClInclude Include="Utility\com_time.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\com_recorder.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utility\mem_data_factory.inl">
@@ -267,6 +270,9 @@
     </ClCompile>
     <ClCompile Include="com_aes.cpp">
       <Filter>Utility\com</Filter>
+    </ClCompile>
+    <ClCompile Include="logsystem.cpp">
+      <Filter>Utility\main</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -16,7 +16,9 @@
 #include <future>
 #include <atomic>
 
-#if defined(__linux__) || !defined(_WIN32)
+#ifdef  _WIN32
+//#include <Windows.h>
+#else
 #include <pthread.h>
 inline pthread_t GetCurrentThreadId()
 {

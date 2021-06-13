@@ -26,6 +26,7 @@
     <ClInclude Include="Utility\com_binaryloader.hpp" />
     <ClInclude Include="Utility\com_character.hpp" />
     <ClInclude Include="Utility\com_endian.hpp" />
+    <ClInclude Include="Utility\com_recorder.hpp" />
     <ClInclude Include="Utility\com_sha256.hpp" />
     <ClInclude Include="Utility\com_time.hpp" />
     <ClInclude Include="Utility\com_widgets.hpp" />
@@ -92,6 +93,7 @@
     <ClCompile Include="com_md5.cpp" />
     <ClCompile Include="com_sha256.cpp" />
     <ClCompile Include="logger.cpp" />
+    <ClCompile Include="logsystem.cpp" />
     <ClCompile Include="task_channel.cpp" />
     <ClCompile Include="net_framework.cpp" />
     <ClCompile Include="net_io_service.cpp" />

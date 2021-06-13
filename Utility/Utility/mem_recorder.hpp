@@ -22,7 +22,7 @@ private:
 	struct node_t
 	{
 		inline void clear(void) { m_reader = m_buffer;  m_writer = m_buffer; m_next = nullptr; }
-		char m_buffer[max_len + block_size] = {0};
+		char m_buffer[max_len + block_size + 2] = {0};
 		const char* m_tail = m_buffer + max_len;
 		char* m_reader = m_buffer;
 		char* m_writer = m_buffer;
@@ -51,7 +51,10 @@ public:
 			m_pool.free(node);
 		}
 	}
-	inline char* write(void) const { return m_writer_node->m_writer; }
+	inline char* write(size_t* size = nullptr) const { 
+		if (size) *size = m_writer_node->m_tail - m_writer_node->m_writer + block_size;
+		return m_writer_node->m_writer;
+	}
 	bool commit_write(std::size_t size) {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_writer_node->m_writer += size;
