@@ -28,7 +28,7 @@ public:
 
 	struct iv_t
 	{
-		char m_data[BLOCK_SIZE];
+		char m_data[BLOCK_SIZE] = {0};
 		std::uint8_t m_len = 0;
 		operator char* () { return m_data; }
 	};
@@ -85,9 +85,9 @@ protected:
 
 	}
 protected:
-	char m_key[KEY_LEN];
+	char m_key[KEY_LEN] = {0};
 	bool key_init = false;
-	uint32_t m_w[KEY_EXT];
+	uint32_t m_w[KEY_EXT] = {0};
 };
 ////////////////////////////////////////////////////////////////////////////////
 }// namespace _impl 

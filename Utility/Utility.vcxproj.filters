@@ -195,6 +195,9 @@
     <ClInclude Include="Utility\logsystem.hpp">
       <Filter>Utility\main</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\com_time.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utility\mem_data_factory.inl">

@@ -8,8 +8,8 @@
 #define __UTILITY_LOG_SYSTEM_HPP__
 
 #include "com_thread_pool.hpp"
+#include "com_time.hpp"
 #include "com_singleton.hpp"
-#include "com_guard.hpp"
 #include "mem_recorder.hpp"
 #include "logger.hpp"
 
@@ -19,40 +19,39 @@ namespace Utility
 namespace main
 {
 ////////////////////////////////////////////////////////////////////////////////
-template<size_t block_size>
-class logsystem : public logger_iface, public com::iface::Singleton<logsystem<block_size>>
+class logsystem : public logger_iface, public com::iface::Singleton<logsystem>
 {
 public:
-	enum class log_level {
-		error = 0,
-		warn = 1,
-		info = 2,
-		debug = 3
+	struct level {
+		static constexpr std::uint8_t error = 0;
+		static constexpr std::uint8_t warn = 1;
+		static constexpr std::uint8_t info = 2;
+		static constexpr std::uint8_t debug = 3;
+		static constexpr std::uint8_t other = 4;
 	};
-	static constexpr size_t max_len = block_size;
-	DECLARE_SINGLETON(logsystem)
+	static constexpr size_t max_file_size = 1024 * 1024 * 1024;
 private:
+	static constexpr size_t HEAD_LEN = 38;
+	static constexpr size_t MAX_LEN = Clog::MAX_LOG_LEN + HEAD_LEN;
 	enum class state_t { none, running, stopping };
-	using recorder = mem::recorder<block_size>;
+	using recorder = mem::recorder<MAX_LEN>;
 	struct task_info
 	{
 		logsystem* m_log;
 		recorder* m_recorder;
 		void exec(void) { m_log->save(m_recorder); }
 	};
-	struct node_t 
-	{
-		recorder m_current;
-		node_t* m_next = nullptr;
-	};
-	static constexpr const char* out_type[] = { "ERRO","WARN","INFO","DBUG" };
+	static constexpr const char* out_type[] = { "ERRO","WARN","INFO","DBUG","LV%02X" };
 public:
-	void start(log_level lv,const char* filename,size_t max) {
+	logsystem(void) = default;
+	~logsystem(void) { m_worker.safe_stop(); }
+
+	void start(const char* filename = "log", std::uint8_t lv = logsystem::level::info, size_t max = logsystem::max_file_size){
 		state_t exp = state_t::none;
 		if (!m_state.compare_exchange_strong(exp, state_t::running))
 			Clog::error_throw(errors::logic, "logsystem already running!");
 
-		m_level = (int)lv;
+		m_level = lv;
 		max_size = max;
 	}
 	void stop(void) {
@@ -60,7 +59,7 @@ public:
 		if (!m_state.compare_exchange_strong(exp, state_t::stopping))
 			return;
 
-		m_workers.safe_stop();
+		m_worker.safe_stop();
 		m_state = state_t::none;
 	}
 private:
@@ -72,6 +71,7 @@ private:
 			if (0 == size)
 				return;
 
+			m_len += size;
 			// log save
 			std::cout << p;
 
@@ -79,56 +79,48 @@ private:
 		} while (true);
 	}
 
-	inline void log_out(const char* str, int n) {
-		if(m_level < n) return;
-		node_t* node;
-		std::unique_lock<std::mutex> lock(m_mutex);
-		if (nullptr == m_recorders) {
-			node = m_pool.malloc();
-		}else{
-			node = m_recorders;
-			m_recorders = node->m_next;
-		}
-		lock.unlock();
+	inline void log_out(const char* str, std::uint8_t lv) {
+		if(m_level < lv) return;
+		recorder* rec = m_pool.malloc();
+		char* buffer = rec->write();
+		if (lv > level::debug)
+			snprintf(buffer + 1, 10, out_type[level::other], lv);
+		else
+			memcpy(buffer + 1, out_type[lv], 5);
+
 		tm tmNow;
 		time_t tNow = time(nullptr);
 		localtime_r(&tNow, &tmNow);
-		char* buffer = node->m_current.write();
-		snprintf(buffer, max_len
-			, "[%s][%04d-%02d-%02d %02d:%02d:%02d][%08lX]%s", out_type[n]
+		snprintf(buffer, MAX_LEN
+			, "[%s][%04d-%02d-%02d %02d:%02d:%02d][%08X] %s", buffer + 1
 			, tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday
 			, tmNow.tm_hour, tmNow.tm_min, tmNow.tm_sec
 			, ::GetCurrentThreadId(), str);
+
 		std::size_t len = strlen(buffer);
 		buffer[len] = 0x0;
-		if(node->m_current.commit_write(len))
-			m_workers.schedule(task_info{this,&node->m_current});
-		lock.lock();
-		node->m_next = m_recorders;
-		m_recorders = node;
+		if(rec->commit_write(len))
+			m_worker.schedule(task_info{this,rec});
+		
+		m_pool.free(rec);
 	}
-public:
+
 	inline void debug(const char* str) { log_out(str, 3); }
 	inline void info(const char* str) { log_out(str, 2); }
 	inline void warn(const char* str) { log_out(str, 1); }
 	inline void error(const char* str) { log_out(str, 0); }
+	inline void log(std::uint32_t lv, const char* str) { log_out(str, lv); }
 private:
 	std::mutex m_mutex;
-	com::task_thread<task_info> m_workers;
-	mem::data_pool<node_t, 5> m_pool;
+	com::task_thread<task_info> m_worker;
+	mem::data_pool_s<recorder, 5> m_pool;
 	std::atomic<state_t> m_state = state_t::none;
-	int m_level = 0;
-	node_t* m_recorders = nullptr;
+	std::uint8_t m_level = 0;
 	size_t max_size = 0;
 	size_t m_len = 0;
 
 	std::ofstream m_file;
 };
-////////////////////////////////////////////////////////////////////////////////
-template<size_t block_size>
-logsystem<block_size>::logsystem(void){}
-template<size_t block_size>
-logsystem<block_size>::~logsystem(void) { m_workers.safe_stop(); }
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

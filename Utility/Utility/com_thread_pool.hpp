@@ -16,6 +16,14 @@
 #include <future>
 #include <atomic>
 
+#if defined(__linux__) || !defined(_WIN32)
+#include <pthread.h>
+inline pthread_t GetCurrentThreadId()
+{
+	return pthread_self();
+}
+#endif // _WIN32
+
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -64,17 +64,20 @@ public:
 	virtual ~logger_iface(void) = default;
 	logger_iface(const logger_iface&) = delete;
 	logger_iface& operator=(const logger_iface&) = delete;
-public:
+
+	friend class Clog;
+private:
 	virtual void debug(const char*) = 0;
 	virtual void info(const char*) = 0;
 	virtual void warn(const char*) = 0;
 	virtual void error(const char*) = 0;
+	virtual void log(std::uint8_t lv, const char*) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class logger : public logger_iface 
 {
 public:
-	enum class log_level {
+	enum class log_level : std::uint8_t {
 		error = 0,
 		warn = 1,
 		info = 2,
@@ -85,7 +88,7 @@ public:
 	~logger(void) = default;
 	logger(const logger&) = delete;
 	logger& operator=(const logger&) = delete;
-public:
+private:
 	void debug(const char*);
 	void info(const char*);
 	void warn(const char*);
@@ -118,10 +121,14 @@ private:
 	LOG_THROW(e,type,fmt)						\
 	throw utility_error(static_cast<std::int64_t>(e));	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef UTILITY_MAX_LOG_LEN
+#define UTILITY_MAX_LOG_LEN 1024
+#endif // !UTILITY_MAX_LOG_LEN
+////////////////////////////////////////////////////////////////////////////////////////////////////
 class Clog
 {
 public:
-	static const int MAX_LOG_LEN = 1024;
+	static const int MAX_LOG_LEN = UTILITY_MAX_LOG_LEN;
 
 	Clog(void) = delete;
 	Clog(const Clog&) = delete;
@@ -134,6 +141,7 @@ public:
 	static void info(const char* fmt, ...)						{ LOG_OUTPUT(info, fmt) }
 	static void warn(const char* fmt, ...)						{ LOG_OUTPUT(warn, fmt)	}
 	static void error(const char* fmt, ...)						{ LOG_OUTPUT(error, fmt) }
+	static void log(std::uint8_t lv, const char* fmt, ...)		{ logger_iface* p = *refence(); if (p) { LOG_FORMAT(fmt) p->log(lv, str); }}
 	template<class T>
 	static void error_throw(T e_no, const char* fmt, ...)		{ LOG_FORMAT(fmt)throw utility_error(static_cast<std::int64_t>(e_no), str); }
 private:
