@@ -29,13 +29,52 @@ private:
 		node_t* m_node;
 		void exec(void) { m_recorder->save(m_node); }
 	};
+	static constexpr size_t file_max = 1024 * 1024 * 1024;
+public:
+	class noter 
+	{
+	public:
+		noter(void) = delete;
+		~noter(void) = default;
+
+		noter(noter&&) = default;
+		noter& operator=(noter&&) noexcept = default;
+
+		noter(const noter&) = delete;
+		noter& operator=(const noter&) = delete;
+
+		void write(const char* src, size_t len) {
+			assert(m_parent && m_parent->m_state == recorder::state_t::running);
+			if (!m_node) m_node = m_parent->m_pool.malloc();
+			size_t size = 0;
+			char* p;
+			do {
+				p = m_node->write(&size);
+				size = size > len ? len : size;
+				memcpy(p, src, size);
+				m_node->commit_write(size);
+			} while (len -= size);
+		}
+
+		void commit(void) { m_parent->m_worker.schedule(task_info{ m_parent,m_node }); m_node = nullptr; }
+	private:
+		friend class recorder;
+		noter(recorder* p) : m_parent(p){}
+	private:
+		recorder* m_parent = nullptr;
+		node_t* m_node = nullptr;
+	};
+	friend class noter;
 public:
 	using writer = node_t*;
 
 	recorder(void) = default;
 	~recorder(void) { stop(); }
 
-	void start(const char* filename, const char* ext, size_t filemax) {
+	recorder(const recorder&) = delete;
+	recorder& operator=(const recorder&) = delete;
+
+	void start(const char* filename, const char* ext, size_t filemax = file_max) {
 		state_t exp = state_t::none;
 		if (!m_state.compare_exchange_strong(exp, state_t::running))
 			Clog::error_throw(errors::logic, "logsystem already running!");
@@ -50,27 +89,17 @@ public:
 			return;
 
 		m_worker.safe_stop();
-		if (m_file.is_open())
+		if (m_file.is_open()) {
+			m_file.flush();
 			m_file.close();
+		}
+			
 
 		m_state = state_t::none;
 	}
 
-	writer write_begin(void) { return m_pool.malloc(); }
-	void write(writer node,const char* src,size_t len) {
-		assert(node != nullptr);
-		size_t size = 0;
-		char* p;
-		do {
-			p = node->write(&size);
-			size = size > len ? len : size;
-			memcpy(p, src, size);
-			node->commit_write(size);
-		} while (len -= size);
-	}
-	void write_end(writer* node) { m_worker.schedule(task_info{ this,*node }); *node = nullptr; }
-
-	void insert(const char* src, size_t len) {
+	void write(const char* src, size_t len) {
+		assert(m_state == state_t::running);
 		node_t* node = m_pool.malloc();
 		size_t size = 0;
 		char* p;
@@ -82,6 +111,8 @@ public:
 		} while (len -= size);
 		m_worker.schedule(task_info{ this,node });
 	}
+
+	inline noter&& get_noter(void) { return std::move(noter{ this }); }
 private:
 	bool open_file(void) {
 		char buffer[20];
@@ -95,8 +126,10 @@ private:
 		file += buffer;
 		file += m_ext;
 
-		if (m_file.is_open())
+		if (m_file.is_open()) {
+			m_file.flush();
 			m_file.close();
+		}
 
 		m_file.open(file, std::ios::out | std::ios::app | std::ios::binary);
 		if (!m_file.is_open()) {
@@ -112,7 +145,7 @@ private:
 		const char* p;
 
 		do {
-			if (!m_file.good())
+			if (!m_file.is_open() || !m_file.good())
 				if (!open_file())
 					break;
 					
@@ -124,9 +157,11 @@ private:
 			m_len += size;
 			p_recorder->commit_read();
 
-			if(m_len > max_size)
+			if (m_len > max_size) {
 				if (!open_file())
 					break;
+				m_len = 0;
+			}
 		} while (true);
 
 		m_pool.free(p_recorder);

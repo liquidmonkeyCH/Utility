@@ -48,6 +48,9 @@ public:
 	logsystem(void) = default;
 	~logsystem(void) { stop(); }
 
+	logsystem(const logsystem&) = delete;
+	logsystem& operator=(const logsystem&) = delete;
+
 	void start(const char* filename = "./log", std::uint8_t lv = logsystem::level::info, size_t max = logsystem::max_file_size);
 	void stop(void);
 private:
