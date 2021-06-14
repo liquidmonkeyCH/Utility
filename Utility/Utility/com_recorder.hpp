@@ -30,6 +30,8 @@ private:
 		void exec(void) { m_recorder->save(m_node); }
 	};
 public:
+	using writer = node_t*;
+
 	recorder(void) = default;
 	~recorder(void) { stop(); }
 
@@ -54,7 +56,21 @@ public:
 		m_state = state_t::none;
 	}
 
-	void insert(const char* src,size_t len) {
+	writer write_begin(void) { return m_pool.malloc(); }
+	void write(writer node,const char* src,size_t len) {
+		assert(node != nullptr);
+		size_t size = 0;
+		char* p;
+		do {
+			p = node->write(&size);
+			size = size > len ? len : size;
+			memcpy(p, src, size);
+			node->commit_write(size);
+		} while (len -= size);
+	}
+	void write_end(writer* node) { m_worker.schedule(task_info{ this,*node }); *node = nullptr; }
+
+	void insert(const char* src, size_t len) {
 		node_t* node = m_pool.malloc();
 		size_t size = 0;
 		char* p;
@@ -62,10 +78,9 @@ public:
 			p = node->write(&size);
 			size = size > len ? len : size;
 			memcpy(p, src, size);
-			if (node->commit_write(size))
-				m_worker.schedule(task_info{ this,node });
+			node->commit_write(size);
 		} while (len -= size);
-		m_pool.free(node);
+		m_worker.schedule(task_info{ this,node });
 	}
 private:
 	bool open_file(void) {
@@ -92,18 +107,18 @@ private:
 		return true;
 	}
 
-	void save(recorder * p_recorder) {
+	void save(node_t* p_recorder) {
 		std::size_t size;
 		const char* p;
 
 		do {
 			if (!m_file.good())
 				if (!open_file())
-					return;
+					break;
 					
 			p = p_recorder->read(size);
 			if (0 == size)
-				return;
+				break;
 
 			m_file.write(p, size);
 			m_len += size;
@@ -111,8 +126,10 @@ private:
 
 			if(m_len > max_size)
 				if (!open_file())
-					return;
+					break;
 		} while (true);
+
+		m_pool.free(p_recorder);
 	}
 private:
 	com::task_thread<task_info> m_worker;
