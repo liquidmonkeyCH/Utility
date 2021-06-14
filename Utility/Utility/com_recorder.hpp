@@ -89,11 +89,8 @@ public:
 			return;
 
 		m_worker.safe_stop();
-		if (m_file.is_open()) {
-			m_file.flush();
+		if (m_file.is_open())
 			m_file.close();
-		}
-			
 
 		m_state = state_t::none;
 	}
@@ -116,7 +113,7 @@ public:
 private:
 	bool open_file(void) {
 		char buffer[20];
-		com::tm tmNow;
+		date_time tmNow(date_time::empty,date_time::empty,date_time::empty);
 		tmNow.set();
 		snprintf(buffer, 20, "_%04d%02d%02d%02d%02d%02d."
 			, tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday
@@ -126,10 +123,8 @@ private:
 		file += buffer;
 		file += m_ext;
 
-		if (m_file.is_open()) {
-			m_file.flush();
+		if (m_file.is_open())
 			m_file.close();
-		}
 
 		m_file.open(file, std::ios::out | std::ios::app | std::ios::binary);
 		if (!m_file.is_open()) {
@@ -145,9 +140,8 @@ private:
 		const char* p;
 
 		do {
-			if (!m_file.is_open() || !m_file.good())
-				if (!open_file())
-					break;
+			if (!m_file.is_open() && !open_file())
+				break;
 					
 			p = p_recorder->read(size);
 			if (0 == size)
@@ -157,9 +151,9 @@ private:
 			m_len += size;
 			p_recorder->commit_read();
 
+			if (!m_file.good())	break; 		// Ó²ÅÌÂúÁË
 			if (m_len > max_size) {
-				if (!open_file())
-					break;
+				if (!open_file()) break;
 				m_len = 0;
 			}
 		} while (true);

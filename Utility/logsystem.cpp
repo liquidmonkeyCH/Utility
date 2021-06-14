@@ -35,10 +35,8 @@ void logsystem::stop(void) {
 		return;
 
 	m_worker.safe_stop();
-	if (m_file.is_open()) {
-		m_file.flush();
+	if (m_file.is_open())
 		m_file.close();
-	}
 
 	m_state = state_t::none;
 }
@@ -54,14 +52,12 @@ bool logsystem::open_file(void) {
 	std::string file = m_filename;
 	file += buffer;
 
-	if (m_file.is_open()) {
-		m_file.flush();
+	if (m_file.is_open())
 		m_file.close();
-	}
 		
 	m_file.open(file, std::ios::out | std::ios::app | std::ios::binary);
 	if (!m_file.is_open()) {
-		Clog::error("recorder open file fail! (%s)", file.c_str());
+		std::cout << "recorder open file fail!(" << file.c_str() << ")" << std::endl;
 		return false;
 	}
 
@@ -72,9 +68,8 @@ void logsystem::save(recorder* p_recorder) {
 	std::size_t size;
 	const char* p;
 	do {
-		if (!m_file.is_open() || !m_file.good())
-			if (!open_file())
-				return;
+		if (!m_file.is_open() && !open_file())
+			return;
 
 		p = p_recorder->read(size);
 		if (0 == size)
@@ -84,9 +79,9 @@ void logsystem::save(recorder* p_recorder) {
 		m_len += size;
 		p_recorder->commit_read();
 
+		if (!m_file.good())	return; 		// Ó²ÅÌÂúÁË
 		if (m_len > max_size) {
-			if (!open_file())
-				return;
+			if (!open_file()) return;
 			m_len = 0;
 		}
 	} while (true);
