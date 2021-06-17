@@ -10,11 +10,12 @@
 #include <mutex>
 #include <condition_variable>
 #include <string>
-#include <map>
+#include <set>
 #include <vector>
 #include <atomic>
 
 #include "com_less.hpp"
+#include "Utility/logger.hpp"
 
 namespace Utility
 {
@@ -47,18 +48,20 @@ private:
 public:
 	application(void) = default;
 	~application(void) = default;
-	using param_list = std::vector<std::string>;
-	using param_map = std::map<const char*,int,com::strless>;
+	using param_list = std::vector<const char*>;
+	using param_set = std::set<const char*,com::strless>;
 	friend void on_signal(int n);
 public:
 	bool Start(int param_num, char* params[]);
 	void Run(void);
 
+	inline bool is_daemon(void) { return m_daemon; }
 	void yeild(void);
 	void resume(void);
 protected:
 	size_t get_param_num(void);
 	const char* get_param(size_t n);
+	bool has_param(const char* param);
 protected:
 	virtual bool OnStart(void) = 0;
 	virtual void OnStop(void) = 0;
@@ -68,6 +71,9 @@ private:
 	static controler* get_controler(void);
 private:
 	param_list				m_param_list;
+	param_set				m_param_set;
+	bool					m_daemon = false;
+	logger					m_logger{ logger::log_level::debug };
 };
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -5,7 +5,6 @@
 **/
 
 #include "Utility/application.hpp"
-#include "Utility/logger.hpp"
 
 #include <iostream>
 #include <signal.h>
@@ -76,22 +75,24 @@ application::get_controler(void)
 bool
 application::Start(int param_num, char* params[])
 {
-	Clog::info("Application starting!");
+	Clog::active_logger(&m_logger);
 	if (!get_controler()->start())
 		return false;
 
-	bool bDaemon = false;
+	m_daemon = false;
 	for (int i = 0; i < param_num; ++i)
 	{
 		if (strcmp(params[i], "-d") == 0 || strcmp(params[i], "-daemon") == 0)
-			bDaemon = true;
+			m_daemon = true;
 
 		m_param_list.push_back(params[i]);
+		m_param_set.insert(params[i]);
 	}
 
-	if (bDaemon)
+	if (m_daemon)
 		daemon();
 
+	Clog::info("Application starting!");
 	setsignal();
 	return OnStart();
 }
@@ -102,6 +103,7 @@ application::Run(void)
 	Clog::info("Application start success!");
 	get_controler()->run();
 	OnStop();
+	Clog::active_logger(nullptr);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -172,7 +174,16 @@ application::get_param(size_t n)
 	if (n >= m_param_list.size())
 		return nullptr;
 
-	return m_param_list[n].c_str();
+	return m_param_list[n];
+}
+////////////////////////////////////////////////////////////////////////////////
+bool
+application::has_param(const char* param)
+{
+	if (m_param_set.find(param) == m_param_set.end())
+		return false;
+
+	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }// namespace main

@@ -18,7 +18,7 @@ template<std::size_t block_size>
 class recorder
 {
 private:
-	static constexpr int max_len = block_size * 10;
+	static constexpr int max_len = block_size << 3;
 	struct node_t
 	{
 		inline void clear(void) { m_reader = m_buffer;  m_writer = m_buffer; m_next = nullptr; }

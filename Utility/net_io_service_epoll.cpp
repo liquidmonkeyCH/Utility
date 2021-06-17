@@ -10,7 +10,7 @@
 #include <sys/sysinfo.h>
 #include <functional>
 
-#define EPOLL_LOG
+//#define EPOLL_LOG
 #ifdef EPOLL_LOG
 #define EPOLL_DEBUG(fmt,...) NET_DEBUG(fmt,##__VA_ARGS__)
 #else

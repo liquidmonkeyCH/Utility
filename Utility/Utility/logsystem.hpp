@@ -35,6 +35,7 @@ public:
 private:
 	static constexpr size_t HEAD_LEN = 30;
 	static constexpr size_t MAX_LEN = Clog::MAX_LOG_LEN + HEAD_LEN;
+	static constexpr time_t DAY = 24 * 3600;
 	enum class state_t { none, running, stopping };
 	using recorder = mem::recorder<MAX_LEN>;
 	struct task_info
@@ -51,7 +52,7 @@ public:
 	logsystem(const logsystem&) = delete;
 	logsystem& operator=(const logsystem&) = delete;
 
-	void start(const char* filename = "./log", std::uint8_t lv = logsystem::level::info, size_t max = logsystem::max_file_size);
+	void start(const char* filename = "./log", std::uint8_t lv = logsystem::level::info, size_t max = logsystem::max_file_size, std::uint8_t interval = 24);
 	void stop(void);
 private:
 	bool open_file(void);
@@ -71,6 +72,10 @@ private:
 	std::uint8_t m_level = 0;
 	size_t max_size = 0;
 	size_t m_len = 0;
+	time_t m_tm_tomorrow = 0;
+	time_t m_tm_next = 0;
+	time_t m_interval = 0;
+	std::hash<std::thread::id> m_hash;
 
 	std::string m_filename;
 	std::ofstream m_file;

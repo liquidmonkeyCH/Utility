@@ -19,7 +19,7 @@ namespace Utility
 namespace main
 {
 ////////////////////////////////////////////////////////////////////////////////
-void logsystem::start(const char* filename, std::uint8_t lv, size_t max){
+void logsystem::start(const char* filename, std::uint8_t lv, size_t max, std::uint8_t interval){
 	state_t exp = state_t::none;
 	if (!m_state.compare_exchange_strong(exp, state_t::running))
 		Clog::error_throw(errors::logic, "logsystem already running!");
@@ -27,6 +27,20 @@ void logsystem::start(const char* filename, std::uint8_t lv, size_t max){
 	m_filename = filename;
 	m_level = lv;
 	max_size = max;
+	m_interval = time_t(interval) * 3600;
+	time_t now = time(nullptr);
+	com::tm tmNow;
+	tmNow.set(now);
+	tmNow.tm_min = 0;
+	tmNow.tm_sec = 0;
+	tmNow.tm_hour = 0;
+	m_tm_tomorrow = tmNow.get() + DAY;
+	m_tm_next = tmNow.get() + m_interval;
+	while (m_tm_next < now) m_tm_next += m_interval;
+	if (m_tm_next >= m_tm_tomorrow) {
+		m_tm_next = m_tm_tomorrow;
+		m_tm_tomorrow += DAY;
+	}
 }
 
 void logsystem::stop(void) {
@@ -67,24 +81,41 @@ bool logsystem::open_file(void) {
 void logsystem::save(recorder* p_recorder) {
 	std::size_t size;
 	const char* p;
+
+	time_t now = time(nullptr);
+	if (m_tm_next < now) {
+		m_tm_next += m_interval;
+		if (m_tm_tomorrow <= m_tm_next) {
+			m_tm_next = m_tm_tomorrow;
+			m_tm_tomorrow += DAY;
+		}
+
+		if (!open_file()) return;
+	}
+
 	do {
 		if (!m_file.is_open() && !open_file())
-			return;
+			break;
 
 		p = p_recorder->read(size);
 		if (0 == size)
-			return;
+			break;
 
 		m_file.write(p, size);
 		m_len += size;
 		p_recorder->commit_read();
 
-		if (!m_file.good())	return; 		// Ó²ÅÌÂúÁË
+		if (!m_file.good())	break; 		// Ó²ÅÌÂúÁË
 		if (m_len > max_size) {
-			if (!open_file()) return;
+			m_file.close();
 			m_len = 0;
 		}
 	} while (true);
+
+	if (m_file.is_open() && m_file.good())
+		m_file.flush();
+
+	m_pool.free(p_recorder);
 }
 
 void logsystem::log_out(const char* str, std::uint8_t lv) {
@@ -99,16 +130,14 @@ void logsystem::log_out(const char* str, std::uint8_t lv) {
 	com::tm tmNow;
 	tmNow.set();
 	snprintf(buffer, MAX_LEN
-		, "[%s][%02d:%02d:%02d][%08X] %s\n", buffer + 1
+		, "[%s][%02d:%02d:%02d][%016llX] %s\n", buffer + 1
 		, tmNow.tm_hour, tmNow.tm_min, tmNow.tm_sec
-		, ::GetCurrentThreadId(), str);
+		, (long long)m_hash(std::this_thread::get_id()), str);
 
 	std::size_t len = strlen(buffer);
 	buffer[len] = 0x0;
-	if(rec->commit_write(len))
-		m_worker.schedule(task_info{this,rec});
-		
-	m_pool.free(rec);
+	rec->commit_write(len);
+	m_worker.schedule(task_info{this,rec});
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

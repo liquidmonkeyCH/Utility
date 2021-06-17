@@ -91,6 +91,7 @@
     <ClCompile Include="com_aes.cpp" />
     <ClCompile Include="com_base64.cpp" />
     <ClCompile Include="com_md5.cpp" />
+    <ClCompile Include="com_recorder.cpp" />
     <ClCompile Include="com_sha256.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logsystem.cpp" />
