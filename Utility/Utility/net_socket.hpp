@@ -37,9 +37,10 @@ public:
 	void close(void);
 	void close_fd(fd_t& fd);
 public:
-	const std::string& get_host(void) const;
-	std::uint32_t get_port(void) const;
-	fd_t get_fd(void) const;
+	inline const std::string& get_host(void) const { return m_host; }
+	inline std::uint32_t get_port(void) const { return m_port; }
+	inline const std::uint32_t* get_addr(void) const { return (std::uint32_t*)m_host_hex; }
+	inline fd_t get_fd(void) const { return m_fd; }
 
 	//! only for server
 	void set_fd(fd_t fd, sockaddr_storage* addr);
@@ -56,6 +57,7 @@ protected:
 	fd_t m_fd;
 	std::string m_host;
 	std::uint32_t m_port;
+	std::uint8_t m_host_hex[16];
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<socket_type t = socket_type::tcp>

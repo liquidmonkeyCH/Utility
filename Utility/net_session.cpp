@@ -94,11 +94,11 @@ session_iface::set_connected(framework* parent, fd_t fd, sockaddr_storage* addr)
 {
 	m_state = state::connected;
 	m_parent = parent;
-	on_connect();
 	if (fd == INVALID_SOCKET)
 		return;
 
 	m_socket->set_fd(fd, addr);
+	on_connect();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace net

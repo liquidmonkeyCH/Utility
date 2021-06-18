@@ -46,24 +46,6 @@ socket_iface::operator!=(const socket_iface& rhs) const
 	return !operator==(rhs);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::string&
-socket_iface::get_host(void) const
-{
-	return m_host;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-std::uint32_t
-socket_iface::get_port(void) const
-{
-	return m_port;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-fd_t
-socket_iface::get_fd(void) const
-{
-	return m_fd;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void
 socket_iface::set_fd(fd_t fd, sockaddr_storage* ss)
 {
@@ -78,6 +60,7 @@ socket_iface::set_fd(fd_t fd, sockaddr_storage* ss)
 		char buf[INET6_ADDRSTRLEN] = {};
 		m_host = std::string("[") + ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN) + "]";
 		m_port = ntohs(addr6->sin6_port);
+		memcpy(m_host_hex, &addr6->sin6_addr, 16);
 	}
 	//! ipv4
 	else {
@@ -85,6 +68,7 @@ socket_iface::set_fd(fd_t fd, sockaddr_storage* ss)
 		char buf[INET_ADDRSTRLEN] = {};
 		m_host = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
 		m_port = ntohs(addr4->sin_port);
+		memcpy(m_host_hex, &addr4->sin_addr, 4);
 	}
 
 	SOCKET_DEBUG("connected from ip:%s port%d", m_host.c_str(), m_port);
