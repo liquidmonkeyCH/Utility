@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -88,6 +89,11 @@ application::Start(int param_num, char* params[])
 		m_param_list.push_back(params[i]);
 		m_param_set.insert(params[i]);
 	}
+	m_path = params[0];
+	std::replace(m_path.begin(), m_path.end(), '\\', '/');
+	size_t n = m_path.find_last_of('/');
+	m_path.replace(n, 1, 1, 0);
+	m_name = m_path.c_str() + n + 1;
 
 	if (m_daemon)
 		daemon();

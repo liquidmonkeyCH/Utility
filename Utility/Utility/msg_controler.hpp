@@ -64,6 +64,7 @@ private:
 		if (!handle || (ret = handle(obj, message)) != err::none)
 		{
 			obj->handle_error(ret);
+			obj->do_close();
 			return false;
 		}
 
@@ -76,6 +77,7 @@ private:
 			break;
 		case state::error:
 			obj->handle_error(err::pre_unpack);
+			obj->do_close();
 			break;
 		case state::bad:
 			obj->do_close();

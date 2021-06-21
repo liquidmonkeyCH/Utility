@@ -58,6 +58,9 @@ public:
 	inline bool is_daemon(void) { return m_daemon; }
 	void yeild(void);
 	void resume(void);
+	inline const char* get_path(void) { return m_path.c_str(); }
+	inline const char* get_name(void) { return m_name; }
+	inline const char* get_full_name(void) { return m_param_list.front(); }
 protected:
 	size_t get_param_num(void);
 	const char* get_param(size_t n);
@@ -72,6 +75,8 @@ private:
 private:
 	param_list				m_param_list;
 	param_set				m_param_set;
+	const char*				m_name;
+	std::string				m_path;
 	bool					m_daemon = false;
 	logger					m_logger{ logger::log_level::debug };
 };

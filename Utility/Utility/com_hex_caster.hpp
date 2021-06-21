@@ -119,7 +119,11 @@ hex2bin(T& data,const char* hex,size_t len) { hex_caster<T, hex_header>(data,hex
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool upper = true>
 inline const char* bin_to_hex(const char* src, size_t src_len, char* dst, size_t dst_len, bool hex_header = false){
-	if (hex_header) dst_len -= 2;
+	if (hex_header) {
+		dst_len -= 2;
+		memcpy(dst, "0x\0", 3);
+		dst += 2;
+	}
 	if (dst_len <= src_len * 2) return nullptr;
 	return _impl::bin_to_hex<upper>(dst, (std::uint8_t*)src, src_len);
 }
