@@ -304,6 +304,9 @@ socket_iface::bind(const char* host, std::uint32_t port)
 	m_port = port;
 	create_socket();
 
+	int opt = 1;
+	setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt));
+
 	struct sockaddr_storage ss;
 	socklen_t addr_len;
 
