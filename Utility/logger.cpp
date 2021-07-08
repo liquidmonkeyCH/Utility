@@ -32,6 +32,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 #include <windows.h>
+#include <functional>
 #define DECLARE_COLOR(color,flag)							\
 	inline std::ostream& color(std::ostream &s)				\
 	{														\
@@ -41,55 +42,60 @@
 		return s;											\
 	}
 
-DECLARE_COLOR(green, FOREGROUND_GREEN | FOREGROUND_INTENSITY)
-DECLARE_COLOR(blue, FOREGROUND_BLUE| FOREGROUND_GREEN | FOREGROUND_INTENSITY)
-DECLARE_COLOR(yellow, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY)
-DECLARE_COLOR(red, FOREGROUND_RED | FOREGROUND_INTENSITY)
+DECLARE_COLOR(red, FOREGROUND_RED)
+DECLARE_COLOR(green, FOREGROUND_GREEN)
+DECLARE_COLOR(blue, FOREGROUND_BLUE)
+DECLARE_COLOR(cyan, FOREGROUND_BLUE | FOREGROUND_GREEN)
+DECLARE_COLOR(yellow, FOREGROUND_GREEN | FOREGROUND_RED)
+DECLARE_COLOR(purple, FOREGROUND_BLUE | FOREGROUND_RED)
 DECLARE_COLOR(normal, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 #undef DECLARE_COLOR
 #else
-static const char green[] = { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
 static const char red[] = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
-static const char yellow[] = { 0x1b, '[', '1', ';', '3', '3', 'm', 0 };
+static const char green[] = { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
 static const char blue[] = { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
+static const char yellow[] = { 0x1b, '[', '1', ';', '3', '3', 'm', 0 };
+static const char purple[] = { 0x1b, '[', '1', ';', '3', '5', 'm', 0 };
+static const char cyan[] = { 0x1b, '[', '1', ';', '3', '6', 'm', 0 };
 static const char normal[] = { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
 #endif
 
 namespace Utility
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-logger::logger(log_level level) :m_level(level){}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-logger::debug(const char* msg) 
-{
-	if (m_level < log_level::debug) return;
+void logger::output(log_type t, const char* head, const char* str){
+	int n = static_cast<int>(t);
 	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << green << "DBUG" << normal << "] " << msg << std::endl;
+	switch (t) {
+	case log_type::error:
+		std::cout << "[" << red << log_title[n] << normal << "]";
+		break;
+	case log_type::warn:
+		std::cout << "[" << yellow << log_title[n] << normal << "]";
+		break;
+	case log_type::info:
+		std::cout << "[" << cyan << log_title[n] << normal << "]";
+		break;
+	case log_type::echo:
+		std::cout << "[" << green << log_title[n] << normal << "]";
+		break;
+	case log_type::dump:
+		std::cout << "[" << blue << log_title[n] << normal << "]";
+		break;
+	case log_type::debug:
+		std::cout << "[" << purple << log_title[n] << normal << "]";
+		break;
+	default:
+		std::cout << "[" << purple << "????" << normal << "]";
+		break;
+	}
+
+	std::cout << head << " " << str << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-logger::info(const char* msg)
-{
-	if (m_level < log_level::info) return;
-	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << blue << "INFO" << normal << "] " << msg << std::endl;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-logger::warn(const char* msg)
-{
-	if (m_level < log_level::warn) return;
-	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << yellow << "WARN" << normal << "] " << msg << std::endl;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-logger::error(const char* msg)
-{
-	if (m_level < log_level::error) return;
-	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << "[" << red << "ERRO" << normal << "] " << msg << std::endl;
-}
+logger_iface* Clog::m_logger = nullptr;
+std::uint8_t Clog::m_level = Clog::level::debug;
+std::uint8_t Clog::m_warn = Clog::level::debug;
+std::hash<std::thread::id> Clog::m_hash = std::hash<std::thread::id>();
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace Utility

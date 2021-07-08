@@ -19,13 +19,12 @@ namespace Utility
 namespace main
 {
 ////////////////////////////////////////////////////////////////////////////////
-void logsystem::start(const char* filename, std::uint8_t lv, size_t max, std::uint8_t interval){
+void logsystem::start(const char* filename, size_t max, std::uint8_t interval){
 	state_t exp = state_t::none;
 	if (!m_state.compare_exchange_strong(exp, state_t::running))
 		Clog::error_throw(errors::logic, "logsystem already running!");
 
 	m_filename = filename;
-	m_level = lv;
 	max_size = max;
 	m_interval = time_t(interval) * 3600;
 	time_t now = time(nullptr);
@@ -98,6 +97,7 @@ void logsystem::save(recorder* p_recorder) {
 			break;
 
 		p = p_recorder->read(size);
+
 		if (0 == size)
 			break;
 
@@ -118,26 +118,27 @@ void logsystem::save(recorder* p_recorder) {
 	m_pool.free(p_recorder);
 }
 
-void logsystem::log_out(const char* str, std::uint8_t lv) {
-	if(m_level < lv) return;
+void logsystem::output(log_type t, const char* head, const char* str) {
 	recorder* rec = m_pool.malloc();
 	char* buffer = rec->write();
-	if (lv > level::debug)
-		snprintf(buffer + 1, 10, out_type[level::other], lv);
-	else
-		memcpy(buffer + 1, out_type[lv], 5);
-
-	com::tm tmNow;
-	tmNow.set();
-	snprintf(buffer, MAX_LEN
-		, "[%s][%02d:%02d:%02d][%016llX] %s\n", buffer + 1
-		, tmNow.tm_hour, tmNow.tm_min, tmNow.tm_sec
-		, (long long)m_hash(std::this_thread::get_id()), str);
-
-	std::size_t len = strlen(buffer);
-	buffer[len] = 0x0;
-	rec->commit_write(len);
-	m_worker.schedule(task_info{this,rec});
+	snprintf(buffer, Clog::MAX_SIZE, "[%s]%s ", log_title[static_cast<int>(t)], head);
+	rec->commit_write(strlen(buffer));
+	std::size_t left = strlen(str);
+	std::size_t size = 0;
+	do {
+		buffer = rec->write(&size);
+		if (size > left) {
+			memcpy(buffer, str, left);
+			buffer[left] = '\n';
+			rec->commit_write(left + 1);
+			break;
+		}
+		memcpy(buffer, str, size);
+		rec->commit_write(size);
+		str += size;
+		left -= size;
+	} while (true);
+	m_worker.schedule(task_info{ this,rec });
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

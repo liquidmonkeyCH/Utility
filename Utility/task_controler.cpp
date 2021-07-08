@@ -9,7 +9,7 @@
 
 #define CONTROLER_LOG
 #ifdef CONTROLER_LOG
-#define CONTROLER_WARN(exp,fmt,...) if(!(exp)) Clog::warn(fmt,##__VA_ARGS__);
+#define CONTROLER_WARN(exp,fmt,...) if(!(exp)) Clog::warn(1,fmt,##__VA_ARGS__);
 #else
 #define CONTROLER_WARN(exp,fmt,...)
 #endif

@@ -36,18 +36,18 @@ public:
 	template<class T>
 	bool get(T& data)
 	{
-		constexpr net_size_t size = sizeof(T);
+		net_size_t len = sizeof(T);
 		const char* p;
-		net_size_t len = size;
-		net_size_t pos = 0;
+		char* head = (char*)&data;
+		const char* tail = head + len;
 		do
 		{
 			p = this->next(len);
 			if (!p) return false;
-			memcpy((char*)(&data) + pos, p, len);
-			pos += len;
-			if (pos >= size) break;
-			len = size - pos;
+			memcpy(head, p, len);
+			head += len;
+			if (head >= tail) break;
+			len = net_size_t(tail - head);
 		} while (true);
 		return true;
 	}

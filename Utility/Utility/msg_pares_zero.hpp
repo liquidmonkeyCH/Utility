@@ -1,10 +1,10 @@
 /**
-* @file msg_pares_len.hpp
+* @file msg_pares_zero.hpp
 *
 * @author Hourui (liquidmonkey)
 */
-#ifndef __MSG_PARES_LEN_HPP__
-#define __MSG_PARES_LEN_HPP__
+#ifndef __MSG_PARES_ZERO_HPP__
+#define __MSG_PARES_ZERO_HPP__
 
 #include "msg_message.hpp"
 
@@ -17,15 +17,14 @@ namespace msg
 namespace pares_zero
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class buffer_type, net_size_t max_message_len = buffer_type::pre_block_size>
-class comfirmer : public _message_impl<buffer_type, max_message_len>
+template<class msg_buffer>
+class comfirmer : public __impl::message<msg_buffer>
 {
 public:
-	using buffer_t = buffer_type;
-
+	using base = __impl::message<msg_buffer>;
 	comfirmer(void)
 	{
-		static_assert(max_message_len > sizeof(std::uint32_t), "max_message_len out of range!");
+		static_assert(base::max_message_len > sizeof(net_size_t), "max_message_len out of range!");
 	}
 	virtual ~comfirmer(void) = default;
 	template<class message_wrap, class handler_manager> friend class msg::controler;
@@ -54,7 +53,7 @@ private:
 				if (size <= len)
 				{
 					this->m_size += size;
-					if (this->m_size > max_message_len)
+					if (this->m_size > base::max_message_len)
 						return state::error;
 
 					this->set_read_limit(this->m_size);
@@ -65,7 +64,7 @@ private:
 
 				this->m_size += len;
 
-				if (this->m_size > max_message_len)
+				if (this->m_size > base::max_message_len)
 					return state::error;
 
 			} while (true);
@@ -81,4 +80,4 @@ private:
 }//namespace msg
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace Utility 
-#endif //__MSG_MESSAGE_HPP__
+#endif //__MSG_PARES_ZERO_HPP__

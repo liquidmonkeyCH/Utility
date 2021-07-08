@@ -52,7 +52,7 @@ session_iface::close(reason st)
 	if (!m_state.compare_exchange_strong(exp, state::closing))
 		return;
 
-	Clog::info("session close:%d", static_cast<std::uint32_t>(st));
+	Clog::info("%s disconnect! close reason:(%d)!", m_socket->get_host().c_str(), static_cast<std::uint32_t>(st));
 	m_close_reason = st;
 	m_io_service->untrack_session(this);
 	m_socket->close();
@@ -98,6 +98,7 @@ session_iface::set_connected(framework* parent, fd_t fd, sockaddr_storage* addr)
 		return;
 
 	m_socket->set_fd(fd, addr);
+	Clog::info("%s connected!", m_socket->get_host().c_str());
 	on_connect();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -23,21 +23,31 @@ namespace msg
 enum class state { ok, pending, error, bad };
 template<class message_wrap, class handler_manager> class controler;
 template<class pares_message_wrap> class session;
-////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class buffer_type, net_size_t max_message_len>
-class _message_impl : public buffer_type
+template<class buffer_t, net_size_t msg_len_max = buffer_t::pre_block_size>
+struct buffer : public buffer_t
 {
-public:
-	_message_impl(void) :m_size(0), m_good(true)
-	{
+	static constexpr net_size_t max_message_len = msg_len_max;
+	using buffer_type = buffer_t;
+	buffer(void) {
 		static_assert(max_message_len > 0, "max_message_len out of range!");
 		static_assert(max_message_len <= buffer_type::max_message_len, "max_message_len out of bound!");
 	}
-	virtual ~_message_impl(void) = default;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace __impl
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class msg_buffer>
+class message : public msg_buffer
+{
+public:
+	using buffer_type = typename msg_buffer::buffer_type;
+	message(void) :m_size(0), m_good(true){}
+	virtual ~message(void) = default;
 
-	template<class message_wrap, class handler_manager> friend class controler;
+	template<class message_wrap, class handler_manager> friend class msg::controler;
 	template<net::socket_type st, class pares_message_wrap> friend class net::session_wrap;
-	template<class pares_message_wrap> friend class session;
+	template<class pares_message_wrap> friend class msg::session;
 protected:
 	void commit(void)
 	{
@@ -84,9 +94,11 @@ protected:
 		return true;
 	}
 protected:
-	std::uint32_t m_size;
+	net_size_t m_size;
 	bool m_good;
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace msg
 ////////////////////////////////////////////////////////////////////////////////////////////////////
