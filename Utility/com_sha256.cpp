@@ -153,10 +153,10 @@ void sha256::update(const void* input, std::size_t length) {
 void sha256::final(void) {
     memcpy(m_state, m_digest, sizeof(m_digest));
     char* p = m_tail + m_pos;
-    *p = char(0x80);
+    *p++ = char(0x80);
     std::size_t tmp = m_pos <= DEAD_LINE ? DEAD_LINE - m_pos : BLOCK_SIZE + DEAD_LINE - m_pos;
     if (tmp) {
-        memset(++p, 0, tmp);
+        memset(p, 0, tmp);
         p += tmp;
     }
     *(std::uint64_t*)p = endian(std::uint64_t(m_size * 8));
