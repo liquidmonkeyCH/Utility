@@ -18,7 +18,7 @@ void responder<session_t, handler_manager>::init(size_t max_session, io_service_
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class session_t, class handler_manager>
-void responder<session_t, handler_manager>::start(const char* host, std::uint32_t port)
+void responder<session_t, handler_manager>::start(const char* host, std::uint16_t port)
 {
 	bool exp = false;
 	if (!m_running.compare_exchange_strong(exp, true))
@@ -29,6 +29,7 @@ void responder<session_t, handler_manager>::start(const char* host, std::uint32_
 
 	m_socket->bind(host, port);
 	m_socket->listen();
+	m_session_index = std::uint64_t(port) << 48;
 
 	m_running = true;
 	m_can_stop = std::promise<bool>();
@@ -82,7 +83,31 @@ session_t* responder<session_t, handler_manager>::get_session(void)
 	if (!m_running)
 		return nullptr;
 
-	return m_session_pool.malloc();
+	session_t* session = m_session_pool.malloc();
+	if (session) 
+	{
+		if (++m_session_index == 0)
+			m_session_index = 1;
+
+		session->m_id = m_session_index;
+		m_session_map.emplace(m_session_index, session);
+	}
+
+	return session;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class session_t, class handler_manager>
+session_t* responder<session_t, handler_manager>::get_session(std::uint64_t id)
+{
+	std::lock_guard<std::mutex> lock(m_session_mutex);
+	if (!m_running || !id)
+		return nullptr;
+
+	auto iter = m_session_map.find(id);
+	if (iter == m_session_map.end())
+		return nullptr;
+
+	return iter->second;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class session_t, class handler_manager>
@@ -113,6 +138,8 @@ template<class session_t, class handler_manager>
 void responder<session_t, handler_manager>::on_close_session(session_iface* session)
 {
 	std::lock_guard<std::mutex> lock(m_session_mutex);
+	m_session_map.erase(session->m_id);
+	session->m_id = 0;
 	m_session_pool.free(dynamic_cast<session_t*>(session));
 
 	on_disconnect();

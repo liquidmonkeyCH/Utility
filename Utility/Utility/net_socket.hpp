@@ -30,15 +30,15 @@ public:
 	int read(char* buffer, int len);
 	int write(const char* buffer, int len);
 
-	bool connect(const char* host, std::uint32_t port, std::uint32_t timeout_msecs = 0);
-	void bind(const char* host, std::uint32_t port);
+	bool connect(const char* host, std::uint16_t port, std::uint32_t timeout_msecs = 0);
+	void bind(const char* host, std::uint16_t port);
 	void listen(int max_conn = SOMAXCONN);
 	
 	void close(void);
 	void close_fd(fd_t& fd);
 public:
 	inline const std::string& get_host(void) const { return m_host; }
-	inline std::uint32_t get_port(void) const { return m_port; }
+	inline std::uint16_t get_port(void) const { return m_port; }
 	inline const std::uint32_t* get_addr(void) const { return (std::uint32_t*)m_host_hex; }
 	inline fd_t get_fd(void) const { return m_fd; }
 
@@ -56,8 +56,8 @@ protected:
 protected:
 	fd_t m_fd;
 	std::string m_host;
-	std::uint32_t m_port;
-	std::uint8_t m_host_hex[16];
+	std::uint16_t m_port;
+	std::uint8_t m_host_hex[16] = {0};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<socket_type t = socket_type::tcp>

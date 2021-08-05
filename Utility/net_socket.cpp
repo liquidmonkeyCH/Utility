@@ -153,7 +153,7 @@ socket_iface::create_socket(void)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool
-socket_iface::connect(const char* host, std::uint32_t port, std::uint32_t timeout_msecs)
+socket_iface::connect(const char* host, std::uint16_t port, std::uint32_t timeout_msecs)
 {
 	m_host = host;
 	port = port;
@@ -298,7 +298,7 @@ socket_iface::connect(const char* host, std::uint32_t port, std::uint32_t timeou
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-socket_iface::bind(const char* host, std::uint32_t port)
+socket_iface::bind(const char* host, std::uint16_t port)
 {
 	m_host = host;
 	m_port = port;

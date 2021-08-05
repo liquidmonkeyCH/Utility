@@ -45,7 +45,7 @@ public:
 	using dispatcher_t = task::dispatcher;
 public:
 	void init(io_service_iface* io_service, dispatcher_t* _dispatcher);
-	state start(const char* host, std::uint32_t port, std::uint32_t timeout_msecs = 0);
+	state start(const char* host, std::uint16_t port, std::uint32_t timeout_msecs = 0);
 	void stop(void);
 	void join(void);
 
@@ -53,7 +53,7 @@ public:
 	void send(const void* msg, net_size_t len) { m_session.send(msg,len); }
 	bool is_connected(void){ return m_session.is_connected(); }
 protected:
-	bool connect(const char* host, std::uint32_t port, std::uint32_t timeout_msecs);
+	bool connect(const char* host, std::uint16_t port, std::uint32_t timeout_msecs);
 
 	void on_close_session(session_iface* session);
 protected:

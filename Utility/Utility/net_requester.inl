@@ -15,7 +15,7 @@ void requester<session_t, handler_manager>::init(io_service_iface* io_service, d
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class session_t, class handler_manager>
-requester_iface::state requester<session_t, handler_manager>::start(const char* host, std::uint32_t port, std::uint32_t timeout_msecs)
+requester_iface::state requester<session_t, handler_manager>::start(const char* host, std::uint16_t port, std::uint32_t timeout_msecs)
 {
 	int exp = static_cast<int>(state::none);
 	if (!m_state.compare_exchange_strong(exp, static_cast<int>(state::starting)))
@@ -33,7 +33,7 @@ requester_iface::state requester<session_t, handler_manager>::start(const char* 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class session_t, class handler_manager>
-bool requester<session_t, handler_manager>::connect(const char* host, std::uint32_t port, std::uint32_t timeout_msecs)
+bool requester<session_t, handler_manager>::connect(const char* host, std::uint16_t port, std::uint32_t timeout_msecs)
 {
 	int exp = static_cast<int>(state::starting);
 	if (!m_state.compare_exchange_strong(exp, static_cast<int>(state::connecting)))
@@ -44,6 +44,7 @@ bool requester<session_t, handler_manager>::connect(const char* host, std::uint3
 			m_session.set_connected(this, INVALID_SOCKET, nullptr);
 			m_session.init(m_recv_buffer_size, m_send_buffer_size,&m_controler);
 			m_session.m_socket->set_blocking(false);
+			m_session.id = 1;
 			m_io_service->track_session(&m_session);
 			m_can_stop = std::promise<bool>();
 			m_state = static_cast<int>(state::connected);
@@ -81,6 +82,7 @@ template<class session_t, class handler_manager>
 void requester<session_t, handler_manager>::on_close_session(session_iface* session)
 {
 	(void)session;
+	session->m_id = 0;
 	m_can_stop.set_value(true);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

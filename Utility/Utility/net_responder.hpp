@@ -7,6 +7,7 @@
 #define __NET_RESPONDER_HPP__
 
 #include <future>
+#include <unordered_map>
 #include "mem_data_factory.hpp"
 #include "net_session.hpp"
 #include "msg_controler.hpp"
@@ -55,11 +56,14 @@ public:
 	using sokcet_mode = typename session_t::socket_mode;
 	using message_t = typename session_t::message_t;
 	using dispatcher_t = task::dispatcher;
+	using session_map_t = std::unordered_map<std::uint64_t, session_t*>;
 public:
 	void init(size_t max_session, io_service_iface* io_service, dispatcher_t* _dispatcher);
 
-	void start(const char* host, std::uint32_t port);
+	void start(const char* host, std::uint16_t port);
 	void stop(void);
+	session_t* get_session(std::uint64_t id);
+	inline std::uint64_t get_max_session_index(void) const { return m_session_index; }
 private:
 	void process_accept(per_io_data*, sockaddr_storage*, session_iface**);
 	session_t* get_session(void);
@@ -72,6 +76,8 @@ protected:
 protected:
 	sokcet_mode						m_socket_impl;
 	mem::data_factory<session_t>	m_session_pool;
+	session_map_t					m_session_map;
+	std::uint64_t					m_session_index = 0;
 	std::mutex						m_session_mutex;
 	//! for session
 	std::size_t			m_recv_buffer_size = message_t::pre_block_size * 10;

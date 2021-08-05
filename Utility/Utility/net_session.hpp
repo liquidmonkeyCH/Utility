@@ -47,6 +47,7 @@ public:
 	socket_iface* get_socket(void);
 	void close(reason);
 	bool is_connected(void);
+	std::uint64_t get_id(void) const { return m_id; }
 protected:
 	void set_connected(framework* parent, fd_t fd, sockaddr_storage* addr);
 	virtual void handle_error(int);
@@ -67,6 +68,7 @@ protected:
 	per_io_data m_send_data;
 
 	reason m_close_reason;
+	std::uint64_t m_id = 0;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 template<socket_type st, class pares_message_wrap>
