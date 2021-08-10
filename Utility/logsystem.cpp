@@ -121,8 +121,9 @@ void logsystem::save(recorder* p_recorder) {
 void logsystem::output(log_type t, const char* head, const char* str) {
 	recorder* rec = m_pool.malloc();
 	char* buffer = rec->write();
-	snprintf(buffer, Clog::MAX_SIZE, "[%s]%s ", log_title[static_cast<int>(t)], head);
-	rec->commit_write(strlen(buffer));
+	int len = snprintf(buffer, Clog::MAX_SIZE, "[%s]%s ", log_title[static_cast<int>(t)], head);
+	assert(len >= 0 && len <= Clog::MAX_SIZE);
+	rec->commit_write(len);
 	std::size_t left = strlen(str);
 	std::size_t size = 0;
 	do {
