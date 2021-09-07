@@ -80,8 +80,8 @@ public:
 		m_threadpool.init(size);
 	}
 
-	template<class Duration, class F, class... Args>
-	timer attach(Duration&& tp, F&& f, Args&&... args)
+	template<class F, class... Args>
+	timer attach(time_t tm, F&& f, Args&&... args)
 	{
 		std::lock_guard<std::mutex> lock(mtx);
 		if (!m_running)
@@ -92,7 +92,45 @@ public:
 			ev->m_count = 1;
 		ev->m_siCode = ev->m_count;
 		ev->m_func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-		auto iter = tasks.emplace(std::make_pair(clock::now() + tp, timer{ ev->m_count, ev }));
+		auto iter = tasks.emplace(std::make_pair(clock::from_time_t(tm), timer{ ev->m_count, ev }));
+
+		++m_ntasks;
+		cv.notify_one();
+		return iter->second;
+	}
+
+	template<class Duration, class F, class... Args>
+	timer attach(Duration&& duration, F&& f, Args&&... args)
+	{
+		std::lock_guard<std::mutex> lock(mtx);
+		if (!m_running)
+			return { 0,nullptr };
+
+		event_t* ev = m_event_pool.malloc();
+		if (++ev->m_count == 0)
+			ev->m_count = 1;
+		ev->m_siCode = ev->m_count;
+		ev->m_func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+		auto iter = tasks.emplace(std::make_pair(clock::now() + duration, timer{ ev->m_count, ev }));
+
+		++m_ntasks;
+		cv.notify_one();
+		return iter->second;
+	}
+
+	template<class F, class... Args>
+	timer attach(time_point tp, F&& f, Args&&... args)
+	{
+		std::lock_guard<std::mutex> lock(mtx);
+		if (!m_running)
+			return { 0,nullptr };
+
+		event_t* ev = m_event_pool.malloc();
+		if (++ev->m_count == 0)
+			ev->m_count = 1;
+		ev->m_siCode = ev->m_count;
+		ev->m_func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+		auto iter = tasks.emplace(std::make_pair(tp, timer{ ev->m_count, ev }));
 
 		++m_ntasks;
 		cv.notify_one();
