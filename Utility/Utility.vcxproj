@@ -29,7 +29,6 @@
     <ClInclude Include="Utility\com_recorder.hpp" />
     <ClInclude Include="Utility\com_sha256.hpp" />
     <ClInclude Include="Utility\com_time.hpp" />
-    <ClInclude Include="Utility\com_widgets.hpp" />
     <ClInclude Include="Utility\com_guard.hpp" />
     <ClInclude Include="Utility\com_hex_caster.hpp" />
     <ClInclude Include="Utility\com_less.hpp" />

@@ -46,7 +46,7 @@ protected:
 	bool dispatch_channel(channel* p_channel);
 
 	virtual bool dispatch_obj(object_iface* obj);
-	virtual inline void post_request(channel_node* object) { post_node(object); }
+	virtual void post_request(channel_node* object) { post_node(object); }
 protected:
 	dispatcher* m_dispatcher = nullptr;
 };

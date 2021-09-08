@@ -171,9 +171,6 @@
     <ClInclude Include="Utility\task_channel.hpp">
       <Filter>Utility\task</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\com_widgets.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\com_character.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>

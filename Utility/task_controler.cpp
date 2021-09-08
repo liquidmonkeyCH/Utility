@@ -36,7 +36,7 @@ void controler::dispatch_node(channel_node* node)
 {
 	CONTROLER_WARN(node->m_parent == nullptr, "node enter the channel in an unusual manner!");
 	if (node->m_is_channel ? dispatch_channel(dynamic_cast<channel*>(node))
-		: dispatch_obj(dynamic_cast<object_iface*>(node)))
+		: dynamic_cast<object_iface*>(node)->do_dispatch())
 		post_node(node);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ bool controler::dispatch_channel(channel* p_channel)
 	channel_node* node = p_channel->m_post_root;
 	CONTROLER_WARN(node->m_parent == p_channel, "node change the channel in an unusual manner!");
 	if (node->m_is_channel ? dispatch_channel(dynamic_cast<channel*>(node))
-		: dispatch_obj(dynamic_cast<object_iface*>(node)))
+		: dynamic_cast<object_iface*>(node)->do_dispatch())
 	{ 
 		if(p_channel == node->m_parent)
 			return p_channel->post_node(node);
@@ -58,9 +58,7 @@ bool controler::dispatch_channel(channel* p_channel)
 		return p_channel->pop_front();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool controler::dispatch_obj(object_iface* obj) {
-	return dynamic_cast<object*>(obj)->exec_task();
-}
+bool controler::dispatch_obj(object_iface* obj) { return dynamic_cast<object*>(obj)->exec_task(); }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 }//namespace msg
 ////////////////////////////////////////////////////////////////////////////////////////////////////

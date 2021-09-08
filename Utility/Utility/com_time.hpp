@@ -66,7 +66,7 @@ public:
 	inline void set(time_t t = time(nullptr)) { tm::set(t); m_str[0] = 0; }
 	inline const char* to_str(void) {
 		if (0 == *m_str)
-			snprintf(m_str, 11, "%02d%s%02d%s%02d",
+			snprintf(m_str, 10, "%02d%s%02d%s%02d",
 				this->tm_hour, m_delimiter, this->tm_min, m_delimiter, this->tm_sec);
 		return m_str;
 	}

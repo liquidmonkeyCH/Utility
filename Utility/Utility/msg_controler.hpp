@@ -27,7 +27,7 @@ public:
 
 	controler(const controler&) = delete;
 	controler& operator=(const controler&) = delete;
-public:
+private:
 	inline void post_request(task::channel_node* object)
 	{
 		object_iface* obj = dynamic_cast<object_iface*>(object);
@@ -47,7 +47,7 @@ public:
 			break;
 		}
 	}
-private:
+
 	bool dispatch_obj(task::object_iface* object)
 	{
 		object_iface* obj = dynamic_cast<object_iface*>(object);

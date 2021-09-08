@@ -44,10 +44,12 @@ namespace wrap
 class object_iface : public channel_node
 {
 public:
+	friend class controler;
 	object_iface(void) : channel_node(false) {};
 	virtual ~object_iface(void) = default;
 protected:
 	inline void post_request(void) { m_controler->post_request(this); }
+	inline bool do_dispatch(void) { return m_controler->dispatch_obj(this); }
 protected:
 	controler* m_controler = nullptr;
 };
