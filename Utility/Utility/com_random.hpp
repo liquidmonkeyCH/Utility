@@ -55,6 +55,7 @@ class random_t
 public:
 	using uniform = typename std::conditional<std::is_integral<T>::value, std::uniform_int_distribution<T>, std::uniform_real_distribution<T>>::type;
 	inline T gen(void) { return m_dis(*m_gen); }
+	T operator()(void) { return m_dis(*m_gen); }
 private:
 	random_t(std::mt19937* _gen, T _Min, T _Max) :m_gen(_gen), m_dis(_Min, _Max) {}
 private:

@@ -44,7 +44,7 @@ bool requester<session_t, handler_manager>::connect(const char* host, std::uint1
 			m_session.set_connected(this, INVALID_SOCKET, nullptr);
 			m_session.init(m_recv_buffer_size, m_send_buffer_size,&m_controler);
 			m_session.m_socket->set_blocking(false);
-			m_session.id = 1;
+			m_session.m_id = 1;
 			m_io_service->track_session(&m_session);
 			m_can_stop = std::promise<bool>();
 			m_state = static_cast<int>(state::connected);

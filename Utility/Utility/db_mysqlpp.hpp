@@ -7,6 +7,12 @@
 #ifndef __DB_MYSQL_HPP__
 #define __DB_MYSQL_HPP__
 
+#ifdef _WIN32
+#include <WinSock2.h>
+#undef min
+#undef max
+#endif
+
 #include "mysql++/mysql++.h"
 #include "logger.hpp"
 #include <mutex>

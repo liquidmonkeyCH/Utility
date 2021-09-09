@@ -36,6 +36,7 @@ public:
 			max = len;
 		}
 		buf->sgetn(m_buffer, len);
+		m_file.close();
 		reset(m_buffer, max, len);
 		return true;
 	}
