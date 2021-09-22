@@ -45,6 +45,7 @@ class object_iface : public channel_node
 {
 public:
 	friend class controler;
+	friend class dispatcher;
 	object_iface(void) : channel_node(false) {};
 	virtual ~object_iface(void) = default;
 protected:

@@ -23,7 +23,7 @@ class channel_node
 {
 public:
 	friend class controler;
-	friend class channel;
+	friend class dispatcher;
 
 	channel_node(void) = delete;
 	channel_node(bool flag) :m_is_channel(flag), m_prev(nullptr), m_next(nullptr), m_parent(nullptr) {}
@@ -47,6 +47,7 @@ protected:
 	virtual ~channel(void);
 	
 	friend class controler;
+	friend class dispatcher;
 	template<class,std::uint64_t>
 	friend class mem::data_factory;
 private:
