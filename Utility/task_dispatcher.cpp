@@ -6,6 +6,7 @@
 
 #include "Utility/task_dispatcher.hpp"
 #include "Utility/task_object.hpp"
+#include "Utility/logger.hpp"
 
 #define DISPATCHER_LOG
 #ifdef DISPATCHER_LOG
@@ -20,9 +21,7 @@ namespace Utility
 namespace task
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-dispatcher::channel_pool_t dispatcher::m_pool;
-////////////////////////////////////////////////////////////////////////////////////////////////////
-dispatcher::dispatcher(void){ dispatcher::channel_pool_t::super::set_cache(-1); }
+dispatcher::dispatcher(void){ channel_pool::channel_pool_t::super::set_cache(-1); }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 dispatcher::~dispatcher(void){
 	stop();

@@ -21,6 +21,7 @@ class controler : public handler_manager,public task::controler
 {
 public:
 	using message_t = message_wrap;
+	using super = task::controler;
 public:
 	controler(void) = default;
 	~controler(void) = default;
@@ -36,7 +37,7 @@ private:
 		{
 		case state::ok:
 		case state::bad:
-			this->post_node(obj);
+			super::post_request(obj);
 			break;
 		case state::pending:
 			break;
@@ -48,7 +49,7 @@ private:
 		}
 	}
 
-	bool dispatch_obj(task::object_iface* object)
+	inline bool dispatch_obj(task::object_iface* object)
 	{
 		object_iface* obj = dynamic_cast<object_iface*>(object);
 		mem::message* message = obj->get_message();

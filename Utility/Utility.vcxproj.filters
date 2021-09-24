@@ -256,9 +256,6 @@
     <ClCompile Include="task_channel.cpp">
       <Filter>Utility\task</Filter>
     </ClCompile>
-    <ClCompile Include="task_controler.cpp">
-      <Filter>Utility\task</Filter>
-    </ClCompile>
     <ClCompile Include="com_base64.cpp">
       <Filter>Utility\com</Filter>
     </ClCompile>
@@ -273,6 +270,9 @@
     </ClCompile>
     <ClCompile Include="com_recorder.cpp">
       <Filter>Utility\com</Filter>
+    </ClCompile>
+    <ClCompile Include="task_controler.cpp">
+      <Filter>Utility\task</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -599,7 +599,7 @@ void aes_base::set_iv(const char* iv, size_t size) {
 void aes_base::gen_iv(void) {
 	memset(m_iv, 0, sizeof(m_iv));
 	int iv[BLOCK_WORD] = { com::rand() | 0x01010101,com::rand() | 0x01010101,com::rand() | 0x01010101, 0 };
-	memcpy(m_iv.m_data, iv, BLOCK_WORD);
+	memcpy(m_iv.m_data, iv, BLOCK_SIZE);
 }
 
 void aes_base::gen_key(const char* key, std::uint32_t* w, int Nk, int KeyLen, int KeyExt) {
