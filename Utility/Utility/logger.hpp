@@ -143,6 +143,7 @@ public:
 
 	template<class T>
 	static void error_throw(T e_no, const char* fmt, ...)		{ LOG_THROW(e_no, log_type::error, fmt) }
+	static void (assert)(bool condition, const char* fmt, ...)	{ if (condition) return; LOG_THROW(errors::logic, log_type::error, fmt) }
 	static void error(const char* fmt, ...)						{ LOG_OUT(log_type::error, fmt) }
 	static void warn(const char* fmt, ...)						{ LOG_OUT(log_type::warn, fmt) }
 	static void warn(std::uint8_t lv, const char* fmt, ...)		{ if (m_warn >= lv) LOG_OUT(log_type::warn, fmt) }

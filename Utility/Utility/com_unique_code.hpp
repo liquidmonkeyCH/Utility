@@ -7,9 +7,11 @@
 #ifndef __COM_UNIQUE_CODE_HPP__
 #define __COM_UNIQUE_CODE_HPP__
 
-#include <time.h>
 #include <cstdint>
-#include <mutex>
+#include <atomic>
+#include <queue>
+#include "logger.hpp"
+#include "com_time.hpp"
 
 namespace Utility
 {
@@ -20,31 +22,43 @@ namespace com
 class unique_code
 {
 public:
-	unique_code(void) = default;
-	unique_code(std::uint16_t key) : m_time(time(nullptr)), m_index(0), m_key(key) { m_key <<= 16; }
+	unique_code(std::uint16_t key = 0, std::uint32_t seed = 0xFFFFFFFF & time(nullptr)) { reset(key, seed); }
 	~unique_code(void) = default;
-
-	std::uint64_t gen(void) {
-		std::lock_guard<std::mutex> lock(m_mutex);
-		std::uint64_t code = m_time;
-		code = code << 32;
-		code |= m_key;
-		code |= m_index;
-		if (++m_index > 0xFFFF)
-		{
-			m_index = 0;
-			++m_time;
-		}
-		return code;
+	inline void reset(std::uint16_t key = 0, std::uint32_t seed = 0xFFFFFFFF & time(nullptr)) {
+		std::uint64_t code = key; code <<= 32;
+		code |= seed; code <<= 16;
+		m_code = code;
 	}
-	inline time_t get_seed(void) { std::lock_guard<std::mutex> lock(m_mutex); return m_time; }
-	inline time_t set_seed(time_t tm) { std::lock_guard<std::mutex> lock(m_mutex); m_time = tm; }
-	inline time_t set_key(std::uint16_t key) { std::lock_guard<std::mutex> lock(m_mutex); m_key = key; m_key <<= 16; }
+	inline std::uint64_t gen(void) { return ++m_code; }
+protected:
+	std::atomic_uint64_t m_code;
+};
+////////////////////////////////////////////////////////////////////////////////
+class uid : public unique_code
+{
+public:
+	uid(const char* Name = "", std::uint16_t key = 0, std::uint32_t seed = 0xFFFFFFFF & time(nullptr))
+		: m_name(Name), unique_code(key, seed) {}
+	~uid(void) {
+		std::uint64_t code = m_code.load() >> 16;
+		std::uint32_t seed = 0xFFFFFFFF & code;
+		time_t now = time(nullptr);
+		if (seed >= (0xFFFFFFFF & now)) {
+			com::tm tm_seed;
+			tm_seed.set((now | 0xFFFFFFFF) & seed);
+			Clog::warn("uid(%s)[key=%lld] destroy seed[%04d-%02d-%02d %02d:%02d:%02d]", 
+				m_name.c_str(), (code >> 32)
+				, tm_seed.tm_year + 1900
+				, tm_seed.tm_mon + 1
+				, tm_seed.tm_mday
+				, tm_seed.tm_hour
+				, tm_seed.tm_min
+				, tm_seed.tm_sec);
+		}
+			
+	}
 private:
-	std::mutex m_mutex;
-	time_t m_time;
-	std::uint32_t m_index;
-	std::uint32_t m_key;
+	std::string m_name;
 };
 ////////////////////////////////////////////////////////////////////////////////
 }// namespace com 

@@ -8,7 +8,6 @@
 #define __COM_TIME_HPP__
 
 #include <time.h>
-#include <type_traits>
 
 #ifdef _WIN32
 inline tm* localtime_r(const time_t* timep, struct tm* result)
@@ -26,75 +25,70 @@ namespace com
 
 struct tm : public ::tm
 {
-	inline virtual void set(time_t t = time(nullptr)) { localtime_r(&t, this); }
+	inline void set(time_t t = time(nullptr)) { localtime_r(&t, this); }
 	inline time_t get(void) { return mktime(this); }
 };
 
-struct time_delimiter
+struct datetime : public tm 
 {
-	static constexpr char empty = 0;
-	static constexpr char minus = '-';
-	static constexpr char slash = '/';
-	static constexpr char colon = ':';
-	static constexpr char space = ' ';
-};
-
-class date : public tm, public time_delimiter
-{
-public:
-	date(char delimiter = minus) : m_delimiter{ delimiter } {}
-	~date(void) = default;
-
-	inline void set(time_t t = time(nullptr)) { tm::set(t); m_str[0] = 0; }
-	inline const char* to_str(void) {
-		if (0 == *m_str)
-			snprintf(m_str, 11, "%04d%s%02d%s%02d", 
-				this->tm_year + 1900, m_delimiter, this->tm_mon + 1, m_delimiter, this->tm_mday);
-		return m_str;
+	datetime(time_t t = time(nullptr)) { set(t); }
+	inline void set(time_t t = time(nullptr)) { localtime_r(&t, this); init(); }
+	inline const char* s_year(bool intact = true) const { return intact ? m_buffer : m_buffer + 2; }	// years since 1900
+	inline const char* s_mon(void) const { return m_buffer + 5; }	// months since January - [1, 12]
+	inline const char* s_day(void) const { return m_buffer + 8; }	// day of the month - [1, 31]
+	inline const char* s_hour(void) const { return m_buffer + 11; }	// hours since midnight - [0, 23]
+	inline const char* s_min(void) const { return m_buffer + 14; }	// minutes after the hour - [0, 59]
+	inline const char* s_sec(void) const { return m_buffer + 17; }	// seconds after the minute - [0, 60] including leap second
+	inline const char* c_str(void) const { return m_buffer + 20; }
+	inline const char* to_str(char* buffer, size_t len, const char* fmt = "YYYY-MM-DD hh:mm:ss") const {
+		memset(buffer, 0, len);
+		size_t size = strlen(fmt);
+		const char* p = buffer,*src;
+		if (size > --len) size = len;
+		for (size_t i = 0; i < size; i += len, fmt += len, buffer += len) {
+			src = next(fmt, len);
+			memcpy(buffer, src, len);
+		}
+		return p;
+	}
+	inline std::string to_str(const char* fmt = "YYYY-MM-DD hh:mm:ss") const {
+		std::string ret;
+		const char* src;
+		size_t len,size = strlen(fmt);
+		for (size_t i = 0; i < size; i += len, fmt += len) {
+			src = next(fmt, len);
+			ret.append(src, len);
+		}
+		return std::move(ret);
 	}
 private:
-	char m_str[11] = {0};
-	char m_delimiter[2] = {0};
-};
+	inline void init(void) {
+		snprintf(m_buffer, 20, "%04d-%02d-%02d %02d:%02d:%02d"
+			, tm_year + 1900, tm_mon + 1,tm_mday
+			, tm_hour, tm_min, tm_sec);
+		memcpy(m_buffer + 20, m_buffer, 20);
+		m_buffer[4] = m_buffer[7] = m_buffer[10] = m_buffer[13] = m_buffer[16] = 0;
+	}
 
-class timestamp : public tm, public time_delimiter
-{
-public:
-	timestamp(char delimiter = colon) : m_delimiter{ delimiter } {}
-	~timestamp(void) = default;
-
-	inline void set(time_t t = time(nullptr)) { tm::set(t); m_str[0] = 0; }
-	inline const char* to_str(void) {
-		if (0 == *m_str)
-			snprintf(m_str, 10, "%02d%s%02d%s%02d",
-				this->tm_hour, m_delimiter, this->tm_min, m_delimiter, this->tm_sec);
-		return m_str;
+	inline const char* next(const char* fmt,size_t& len) const {
+		if (fmt[0] < 0) { len = 2; return fmt; }
+		if (fmt[0] != fmt[1]) { len = 1; return fmt; }
+		len = 2;
+		switch (fmt[0]) {
+		case'Y':
+			if (fmt[2] == fmt[3] && fmt[2] == fmt[0]) { len = 4; return m_buffer; }
+			return m_buffer + 2;
+		case'M': return s_mon();
+		case'D': return s_day();
+		case'h': return s_hour();
+		case'm': return s_min();
+		case's': return s_sec();
+		default: break;
+		}
+		return fmt;
 	}
 private:
-	char m_str[10] = { 0 };
-	char m_delimiter[2] = { 0 };
-};
-
-class date_time : public tm, public time_delimiter
-{
-public:
-	date_time(char date_delimiter = minus, char time_delimiter = colon,char delimiter = space)
-		: m_date_delimiter{ date_delimiter }, m_time_delimiter{ time_delimiter }, m_delimiter{delimiter} {}
-	~date_time(void) = default;
-
-	inline void set(time_t t = time(nullptr)) { tm::set(t); m_str[0] = 0; }
-	inline const char* to_str(void) {
-		if (0 == *m_str)
-			snprintf(m_str, 20, "%04d%s%02d%s%02d%s%02d%s%02d%s%02d",
-				this->tm_year + 1900, m_date_delimiter, this->tm_mon + 1, m_date_delimiter, this->tm_mday,
-				m_delimiter,this->tm_hour, m_time_delimiter,this->tm_min, m_time_delimiter, this->tm_sec);
-		return m_str;
-	}
-private:
-	char m_str[20] = { 0 };
-	char m_date_delimiter[2] = { 0 };
-	char m_time_delimiter[2] = { 0 };
-	char m_delimiter[2] = { 0 };
+	char m_buffer[40] {0};
 };
 
 }// namespace com 

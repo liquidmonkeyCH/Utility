@@ -18,38 +18,19 @@ namespace Utility
 namespace _impl
 {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<bool upper>
-struct bin_to_hex_define
-{
-	static constexpr char HEX[] = { 
-		'0','1','2','3','4','5','6','7',
-		'8','9','a','b','c','d','e','f' };
-};
-///////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-struct bin_to_hex_define<true>
-{
-	static constexpr char HEX[] = {
-		'0','1','2','3','4','5','6','7',
-		'8','9','A','B','C','D','E','F' };
-};
+template<bool upper> struct bin_to_hex_define{ static constexpr char HEX[] = "0123456789abcdef"; };
+template<> struct bin_to_hex_define<true> { static constexpr char HEX[] = "0123456789ABCDEF"; };
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool upper>
 inline
 const char* bin_to_hex(char* out, const std::uint8_t* data, size_t size)
 {
-	if (!size)
-	{
-		out[0] = 0x0;
-		return out;
-	}
 	std::int64_t i = -1;
 	for (const std::uint8_t* end = data + size; data != end; ++data)
 	{
 		out[++i] = bin_to_hex_define<upper>::HEX[*data >> 4];
 		out[++i] = bin_to_hex_define<upper>::HEX[*data & 0x0F];
 	}
-	out[++i] = 0x0;
 
 	return out;
 }
@@ -70,7 +51,7 @@ public:
 	static constexpr size_t len = size * 2;
 	bin_to_hex_buffer(void){ m_data[0] = 0x0; m_head = m_data; }
 protected:
-	char m_data[len +1];
+	char m_data[len + 1]{0};
 	char* m_head;
 };
 
@@ -79,9 +60,9 @@ class bin_to_hex_buffer<size,true>
 {
 public:
 	static constexpr size_t len = size * 2 + 2;
-	bin_to_hex_buffer(void){ memcpy(m_data, "0x\0", 3);  m_head = m_data+2; }
+	bin_to_hex_buffer(void){ memcpy(m_data, "0x", 3);  m_head = m_data+2; }
 protected:
-	char m_data[len + 1];
+	char m_data[len + 1] {0};
 	char* m_head;
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,52 +75,50 @@ template<class T, bool hex_header = false, bool upper = true>
 struct hex_caster : public _impl::bin_to_hex_buffer<sizeof(T), hex_header>
 {
 	// bin -> hex
-	hex_caster(const T& data,size_t size = sizeof(T)) 
-	{ _impl::bin_to_hex<upper>(this->m_head, (const std::uint8_t*)&data, size); }
-	// hex -> bin
-	hex_caster(T& data,const char* hex,size_t len) 
-	{ 
-		len = len > this->len ? this->len : len;
-		memcpy(this->m_data, hex, len);
-		this->m_data[len] = 0x0;
-		memset(&data, 0, sizeof(T));
-
-		_impl::hex_to_bin((char*)&data, this->m_head, hex_header ? len-2 : len);
-	}
-	const char* str(void) { return this->m_data; }
+	hex_caster(const T& data) 
+	{ _impl::bin_to_hex<upper>(this->m_head, (const std::uint8_t*)&data, sizeof(T)); }
+	inline const char* c_str(void) { return this->m_data; }
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<bool hex_header = false, bool upper = true, class T>
-hex_caster<T, hex_header, upper> 
-bin2hex(const T& data,size_t size = sizeof(T)) { return hex_caster<T, hex_header, upper>(data,size); }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-template<bool hex_header = false, class T>
-void 
-hex2bin(T& data,const char* hex,size_t len) { hex_caster<T, hex_header>(data,hex,len); }
-///////////////////////////////////////////////////////////////////////////////////////////////////
 template<bool upper = true>
-inline const char* bin_to_hex(const char* src, size_t src_len, char* dst, size_t dst_len, bool hex_header = false){
+inline const char* bin2hex(const void* data, size_t size, char* buf, size_t len, bool hex_header = false){
+	if (len < 2) return nullptr;
+	memset(buf, 0, len);
 	if (hex_header) {
-		dst_len -= 2;
-		memcpy(dst, "0x\0", 3);
-		dst += 2;
+		len -= 2;
+		memcpy(buf, "0x", 2);
+		buf += 2;
 	}
-	if (dst_len <= src_len * 2) return nullptr;
-	return _impl::bin_to_hex<upper>(dst, (std::uint8_t*)src, src_len);
+	len >>= 1;
+	if (size > len) size = len;
+	_impl::bin_to_hex<upper>(buf, (std::uint8_t*)data, size);
+	return buf;
 }
 
-inline const char* hex_to_bin(const char* src, char* dst, size_t dst_len, bool hex_header = false){
-	size_t src_len = strlen(src);
-	if (hex_header) {
-		src_len -= 2;
-		src += 2;
-	}
-	memset(dst, 0, dst_len);
-	dst_len *= 2;
-	src_len = src_len > dst_len ? dst_len : src_len;
-	_impl::hex_to_bin(dst, src, src_len);
-	return dst;
+template<bool upper = true, class T>
+inline const char* bin2hex(const T& data, char* buf, size_t len, bool hex_header = false) {
+	return bin2hex<upper>(&data, sizeof(T), buf, len, hex_header);
 }
+
+template<bool hex_header = false, bool upper = true, class T>
+inline hex_caster<T, hex_header, upper>
+bin2hex(const T& data) { return hex_caster<T, hex_header, upper>(data); }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+inline void hex2bin(const char* hex, void* data, size_t size, bool hex_header = false){
+	size_t len = strlen(hex);
+	if (hex_header) {
+		len -= 2;
+		hex += 2;
+	}
+	memset(data, 0, size);
+	size *= 2;
+	if (len > size) len = size;
+	len = len > size ? len : size;
+	_impl::hex_to_bin((char*)data, hex, len);
+}
+
+template<class T>
+inline void hex2bin(const char* hex, T& data, bool hex_header = false) { hex2bin(hex,&data,sizeof(data),hex_header); }
 #undef UTILITY_COM_HEX_TRANS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace com 

@@ -102,9 +102,16 @@ public:
 		return *this;
 	}
 
-	bool get(char* buffer, std::size_t size, std::size_t pos = 0) {
+	inline bool get(char* buffer, std::size_t size, std::size_t pos = 0) const {
 		if (pos + size > m_len) return false;
 		memcpy(buffer, m_buffer + pos, size);
+		return true;
+	}
+
+	inline bool next(char* buffer, std::size_t size) {
+		if (m_pos + size > m_len) return false;
+		memcpy(buffer, m_buffer + m_pos, size);
+		m_pos += size;
 		return true;
 	}
 
