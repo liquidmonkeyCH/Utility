@@ -25,12 +25,26 @@ namespace com
 
 struct tm : public ::tm
 {
-	inline void set(time_t t = time(nullptr)) { localtime_r(&t, this); }
+	static constexpr time_t SEC_PER_MIN = 60;
+	static constexpr time_t SEC_PER_HOUR = SEC_PER_MIN * 60;
+	static constexpr time_t SEC_PER_DAY = SEC_PER_HOUR * 24;
+	static constexpr time_t SEC_PER_WEEK = SEC_PER_DAY * 7;
+
 	inline time_t get(void) { return mktime(this); }
+	inline void set(time_t t = time(nullptr)) { localtime_r(&t, this); }
+	tm& operator=(const ::tm& _tm) { *(::tm*)this = _tm; return *this; }
+
+	inline tm& trim(void) { set(get()); return *this; }
+	inline tm& trim_min(void) { trim(); tm_sec = 0; return *this; }
+	inline tm& trim_hour(void) { trim(); tm_sec = tm_min = 0; return *this; }
+	inline tm& trim_day(void) { trim(); tm_sec = tm_min = tm_hour = 0; return *this; }
+	inline tm& trim_mont(void) { trim(); tm_sec = tm_min = tm_hour = 0; tm_mday = 1; return *this; }
+	inline tm& trim_year(void) { trim(); tm_sec = tm_min = tm_hour = 0; tm_mday = 1; tm_mon = 0; return *this; }
 };
 
-struct datetime : public tm 
+class datetime : protected tm 
 {
+public:
 	datetime(time_t t = time(nullptr)) { set(t); }
 	inline void set(time_t t = time(nullptr)) { localtime_r(&t, this); init(); }
 	inline const char* s_year(bool intact = true) const { return intact ? m_buffer : m_buffer + 2; }	// years since 1900
