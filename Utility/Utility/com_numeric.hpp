@@ -80,7 +80,8 @@ struct range
 {
 public:
 	static_assert(std::is_arithmetic<num_t>::value, "num_t must be arithmetic!");
-	range(const num_t& a, const num_t& b) : m_min(a>b?b:a), m_max(a>b?a:b) {}
+	range(const num_t& a = 0, const num_t& b = 0) : m_min(a>b?b:a), m_max(a>b?a:b) {}
+	range& operator()(const num_t& a = 0, const num_t& b = 0) { range r(a, b); memcpy(this, &r, sizeof(r)); return *this; }
 	const num_t m_min;
 	const num_t m_max;
 };
