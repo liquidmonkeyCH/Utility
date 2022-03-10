@@ -51,9 +51,6 @@
     <ClInclude Include="Utility\com_md5.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\com_numeric_digit.hpp">
-      <Filter>Utility\com</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\com_protobuf.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
@@ -196,6 +193,9 @@
       <Filter>Utility\com</Filter>
     </ClInclude>
     <ClInclude Include="Utility\com_recorder.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\com_numeric.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
   </ItemGroup>

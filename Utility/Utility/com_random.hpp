@@ -10,6 +10,7 @@
 #include <random>
 #include <time.h>
 #include <atomic>
+#include "com_numeric.hpp"
 
 namespace Utility
 {
@@ -70,7 +71,7 @@ public:
 	inline void set_seed(seed_t seed) { m_gen.seed(seed); }
 
 	template<class T>
-	inline random_t<T> make(T _Min, T _Max) { assert(_Min < _Max); return{ &m_gen,_Min,_Max }; }
+	inline random_t<T> make(T _Min, T _Max) { numeric::range<T> r(_Min, _Max); return{ &m_gen, r.m_min, r.m_max }; }
 
 	template<class T>
 	inline random_t<T> make(T _Max = random_t<T>::MAX) { return make<T>(0, _Max); }
@@ -79,7 +80,7 @@ public:
 	inline T gen() { static random_t<T>::uniform dis; return dis(m_gen); }
 
 	template<class T>
-	inline T gen(T _Min,T _Max) { assert(_Min < _Max); return random_t<T>::uniform(_Min,_Max)(m_gen); }
+	inline T gen(T _Min,T _Max) { numeric::range<T> r(_Min, _Max); return random_t<T>::uniform(r.m_min, r.m_max)(m_gen); }
 
 	template<class T>
 	inline T gen(T _Max) { return gen<T>(0,_Max); }
