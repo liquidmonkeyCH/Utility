@@ -84,7 +84,7 @@ public:
 	range& operator()(const num_t& a = 0, const num_t& b = 0) { range r(a, b); memcpy(this, &r, sizeof(r)); return *this; }
 	const num_t m_min;
 	const num_t m_max;
-};
+}; 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }// namespace numeric
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,5 +103,10 @@ public:
 #define com_numeric_digit_fast_max_32(param) _numeric_digit_fast_max_32(param,com::numeric_digit<decltype(param)>)
 #define com_numeric_digit_fast_max_64(param) _numeric_digit_fast_max_64(param,com::numeric_digit<decltype(param)>)
 #define com_numeric_digit_fast_max(param,len) _numeric_digit_fast_max_##len(param,com::numeric_digit<decltype(param)>)
+
+#define com_numeric_min(a,b) (((a)<(b))?(a):(b))
+#define com_numeric_max(a,b) (((a)>(b))?(a):(b))
+#define _numeric_xor(a,b) (a)^=(b)
+#define com_numeric_range(_min,_max) if((_min) > (_max)){ _numeric_xor(_min,_max);_numeric_xor(_max,_min);_numeric_xor(_min,_max);}
 
 #endif
