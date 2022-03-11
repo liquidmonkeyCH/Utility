@@ -106,7 +106,7 @@ public:
 
 #define com_numeric_min(a,b) (((a)<(b))?(a):(b))
 #define com_numeric_max(a,b) (((a)>(b))?(a):(b))
-#define _numeric_xor(a,b) (a)^=(b)
-#define com_numeric_range(_min,_max) if((_min) > (_max)){ _numeric_xor(_min,_max);_numeric_xor(_max,_min);_numeric_xor(_min,_max);}
+#define com_numeric_xor(a,b) (a)^=(b)
+#define com_numeric_range(_min,_max) if((_min) > (_max)){ com_numeric_xor(_min,_max);com_numeric_xor(_max,_min);com_numeric_xor(_min,_max);}
 
 #endif
