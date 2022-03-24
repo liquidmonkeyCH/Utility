@@ -71,7 +71,7 @@ public:
 	inline void set_seed(seed_t seed) { m_gen.seed(seed); }
 
 	template<class T>
-	inline random_t<T> make(T _Min, T _Max) { numeric::range<T> r(_Min, _Max); return{ &m_gen, r.m_min, r.m_max }; }
+	inline random_t<T> make(T _Min, T _Max) { auto r = std::minmax(_Min, _Max); return{ &m_gen, r.first, r.second }; }
 
 	template<class T>
 	inline random_t<T> make(T _Max = random_t<T>::MAX) { return make<T>(0, _Max); }
@@ -80,7 +80,7 @@ public:
 	inline T gen() { static random_t<T>::uniform dis; return dis(m_gen); }
 
 	template<class T>
-	inline T gen(T _Min,T _Max) { numeric::range<T> r(_Min, _Max); return random_t<T>::uniform(r.m_min, r.m_max)(m_gen); }
+	inline T gen(T _Min,T _Max) { auto r = std::minmax(_Min, _Max); return random_t<T>::uniform(r.first, r.second)(m_gen); }
 
 	template<class T>
 	inline T gen(T _Max) { return gen<T>(0,_Max); }

@@ -29,6 +29,7 @@
     <ClInclude Include="Utility\com_numeric.hpp" />
     <ClInclude Include="Utility\com_recorder.hpp" />
     <ClInclude Include="Utility\com_sha256.hpp" />
+    <ClInclude Include="Utility\com_string.hpp" />
     <ClInclude Include="Utility\com_time.hpp" />
     <ClInclude Include="Utility\com_guard.hpp" />
     <ClInclude Include="Utility\com_hex_caster.hpp" />
