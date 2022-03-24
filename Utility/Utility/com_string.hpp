@@ -33,7 +33,7 @@ public:
 
 	inline size_t size(void) const { return m_len; }
 	inline bool empty(void) const { return m_len == 0; }
-	inline ustring& clear(void) { m_len = 0; memset(m_data, 0, max_len); return *this; }
+	inline ustring& clear(void) { memset(m_data, 0, m_len); m_len = 0; return *this; }
 	inline const char* c_str(void) const { return m_data; }
 	inline const char& at(size_t off) { assert(off < N); return m_data[off]; }
 	inline const char& operator[](size_t off) { return at(off); }
