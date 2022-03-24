@@ -29,7 +29,7 @@ public:
 	template<size_t M>
 	ustring(const ustring<M>& r) : m_len(r.size()) { init(); memcpy(m_data, r.c_str(), m_len); }
 	template<size_t M>
-	ustring& operator=(const ustring<M>& r) { m_len = r.size(); init(); memcpy(m_data, r.c_str(), m_len); }
+	ustring& operator=(const ustring<M>& r) { memset(m_data, 0, m_len); m_len = r.size(); init(); memcpy(m_data, r.c_str(), m_len); }
 
 	inline size_t size(void) const { return m_len; }
 	inline bool empty(void) const { return m_len == 0; }
