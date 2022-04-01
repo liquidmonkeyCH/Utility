@@ -201,6 +201,9 @@
     <ClInclude Include="Utility\com_string.hpp">
       <Filter>Utility\com</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\com_list.hpp">
+      <Filter>Utility\com</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utility\mem_data_factory.inl">
