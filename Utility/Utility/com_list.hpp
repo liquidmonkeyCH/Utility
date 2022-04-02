@@ -34,14 +34,15 @@ public:
 
 		inline void clear(void) { m_prev = m_next = nullptr; m_parent = nullptr; }
 		inline operator bool(void) const { 
-			if (DuplicateAssert) assert(m_prev == nullptr && m_next == nullptr);
-			return (m_prev == nullptr && m_next == nullptr); 
+			if (DuplicateAssert) assert(m_parent == nullptr);
+			return (m_parent == nullptr);
 		}
 
 		T m_data;
 	public:
 		inline T& operator*(void) { return m_data; }
 		inline T* super(void) { return &m_data; }
+		inline bool is_free(void) const { return m_parent == nullptr; }
 	};
 
 	class wrap
