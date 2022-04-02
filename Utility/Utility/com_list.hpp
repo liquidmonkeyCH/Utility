@@ -50,8 +50,8 @@ public:
 		friend class list;
 
 		wrap(node* _node) :m_node(_node) {}
-		inline T& operator*(void) { return m_node->m_data; }
-		inline T* operator->(void) { return m_node ? &m_node->m_data : nullptr; }
+		inline T& operator*(void) const { return m_node->m_data; }
+		inline T* operator->(void) const { return m_node ? &m_node->m_data : nullptr; }
 		inline node* super(void) const { return m_node; }
 	protected:
 		node* m_node{ nullptr };
@@ -75,8 +75,8 @@ public:
 		inline iterator& operator=(const iterator& it) { this->m_node = it.m_node; m_parent = it.m_parent; return *this; }
 		inline iterator& operator=(node* _node) { this->m_node = _node; if(_node)m_parent = _node->m_parent; return *this; }
 		inline iterator& operator=(const wrap& w) { this->m_node = w.m_node; if (w.m_node)m_parent = w.m_node->m_parent; return *this; }
-		inline bool operator == (const iterator& it) { return it.m_parent == m_parent && it.m_node == this->m_node; }
-		inline bool operator != (const iterator& it) { return !operator==(it); }
+		inline bool operator == (const iterator& it) const { return it.m_parent == m_parent && it.m_node == this->m_node; }
+		inline bool operator != (const iterator& it) const { return !operator==(it); }
 	protected:
 		iterator(list* lst, node* _node) :wrap(_node), m_parent(lst) {}
 		inline void next(void) { this->m_node = this->m_node ? this->m_node->m_next : m_parent->m_head; }
@@ -173,9 +173,6 @@ public:
 
 	inline iterator begin(void) { return { this, m_head }; }
 	inline iterator end(void) { return { this,nullptr }; }
-	inline reverse_iterator rbegin(void) { return { this, m_tail }; }
-	inline reverse_iterator rend(void) { return { this,nullptr }; }
-
 	inline wrap front(void) const { return m_head; }
 	inline wrap back(void) const { return m_tail; }
 	inline size_t size(void) const { return m_size; }
