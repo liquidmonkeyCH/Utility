@@ -27,7 +27,6 @@ public:
 		friend class list;
 		friend class wrap;
 		friend class iterator;
-		friend class reverse_iterator;
 		node* m_prev{ nullptr };
 		node* m_next{ nullptr };
 		list* m_parent{ nullptr };
@@ -49,6 +48,7 @@ public:
 	{
 	public:
 		friend class list;
+		friend class iterator;
 
 		wrap(node* _node) :m_node(_node) {}
 		inline T& operator*(void) const { return m_node->m_data; }
@@ -62,7 +62,6 @@ public:
 	{
 	public:
 		friend class list;
-		friend class node;
 
 		iterator(void) = default;
 		iterator(node* _node) : wrap(_node) { if (_node) m_parent = _node->m_parent; }
