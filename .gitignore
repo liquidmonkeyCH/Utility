@@ -3,3 +3,4 @@ Debug
 *.user
 *.pdb
 bin_debug/Utility.lib
+Utility.zip
