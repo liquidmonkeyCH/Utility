@@ -26,6 +26,7 @@
     <ClInclude Include="Utility\com_binaryloader.hpp" />
     <ClInclude Include="Utility\com_character.hpp" />
     <ClInclude Include="Utility\com_endian.hpp" />
+    <ClInclude Include="Utility\com_list.hpp" />
     <ClInclude Include="Utility\com_numeric.hpp" />
     <ClInclude Include="Utility\com_recorder.hpp" />
     <ClInclude Include="Utility\com_sha256.hpp" />
